@@ -5,4 +5,3 @@ package com.rainday.model
  */
 
 data class HostPort(val host: String, val port: Int)
-data class
