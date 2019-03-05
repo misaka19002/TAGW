@@ -1,5 +1,7 @@
 package com.rainday
 
+import io.netty.util.internal.logging.InternalLoggerFactory
+import io.netty.util.internal.logging.Log4J2LoggerFactory
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Launcher
 import io.vertx.core.Vertx
@@ -22,9 +24,15 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            println("ssss")
-            //Force to use slf4j
-            System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory")
+            //netty Force to use slf4j
+            InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
+            //vertx Force to use slf4j
+            System.setProperty(
+                "vertx.logger-delegate-factory-class-name",
+                "io.vertx.core.logging.Log4j2LogDelegateFactory"
+                //"io.vertx.core.logging.SLF4JLogDelegateFactory"
+            )
+            //关闭dns
             System.setProperty("vertx.disableDnsResolver", "true")
 
             Launcher().dispatch(args)

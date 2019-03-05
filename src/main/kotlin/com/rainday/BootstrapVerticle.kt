@@ -1,6 +1,5 @@
 package com.rainday
 
-import com.rainday.application.AppVerticle
 import com.rainday.handler.application.deployApp
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
@@ -13,7 +12,7 @@ import io.vertx.ext.web.Router
  * deploy/undeploy  create/delete/update/query apps
  * 管理APP的verticle,在项目启动时就deploy，默认占用80端口。
  */
-class BootstrapVertivle : AbstractVerticle() {
+class BootstrapVerticle : AbstractVerticle() {
 
     val router = Router.router(vertx)
 
@@ -22,13 +21,11 @@ class BootstrapVertivle : AbstractVerticle() {
     }
 
     override fun start() {
-        println(AppVerticle::class.java)
-        println(AppVerticle::class.java.name)
-        println(AppVerticle::javaClass.name)
-
         /* 部署application 管理 verticle */
         router.put("/app/add").handler(::deployApp)
 
-        vertx.createHttpServer().listen(config().getInteger("http.port")).requestHandler(router)
+        vertx.createHttpServer()
+            .requestHandler(router)
+            .listen(config().getInteger("http.port"))
     }
 }
