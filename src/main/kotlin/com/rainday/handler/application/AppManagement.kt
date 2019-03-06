@@ -1,6 +1,6 @@
 package com.rainday.handler.application
 
-import com.rainday.EB_APP_DEPLOY
+import com.rainday.`val`.EB_APP_DEPLOY
 import com.rainday.application.AppVerticle
 import com.rainday.model.application.Application
 import io.vertx.core.DeploymentOptions
