@@ -5,6 +5,7 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
+import javax.ws.rs.core.MediaType
 
 /**
  * Created by wyd on 2019/2/28 17:10:23.
@@ -22,7 +23,7 @@ class BootstrapVerticle : AbstractVerticle() {
 
     override fun start() {
         /* 部署application 管理 verticle */
-        router.put("/app/add").handler(::deployApp)
+        router.put("/app/add").consumes(MediaType.APPLICATION_JSON).handler(::deployApp)
 
         vertx.createHttpServer()
             .requestHandler(router)

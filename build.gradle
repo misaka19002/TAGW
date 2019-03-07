@@ -54,6 +54,9 @@ dependencies {
     //log
     implementation "org.apache.logging.log4j:log4j-api:2.11.2"
     implementation "org.apache.logging.log4j:log4j-core:2.11.2"
+
+    //jsr规范
+    implementation "javax.ws.rs:javax.ws.rs-api:2.1.1"
 }
 
 /*** tasks ***/
@@ -64,8 +67,8 @@ shadowJar {
     classifier = 'fat'
     baseName = 'tagw'
     manifest {
-        attributes 'Main-Class': 'top.dteam.dgate.Launcher'
-        attributes 'Main-Verticle': 'top.dteam.dgate.MainVerticle'
+        attributes 'Main-Class': 'com.rainday.Launcher'
+        attributes 'Main-Verticle': 'com.rainday.BootstrapVerticle'
     }
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
