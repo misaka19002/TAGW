@@ -3,7 +3,8 @@ package com.rainday
 import com.rainday.application.ProjectInfoVerticle
 import com.rainday.handler.Global404Handler
 import com.rainday.handler.Global413Handler
-import com.rainday.handler.*
+import com.rainday.handler.allApps
+import com.rainday.handler.deployApp
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
@@ -39,7 +40,7 @@ class BootstrapVerticle : AbstractVerticle() {
         /* 部署projectInfoVerticle */
         vertx.deployVerticle(ProjectInfoVerticle()){
             if (it.succeeded()) {
-                println("tagw starting 。。")
+                println("tagw start successfully")
             } else {
                 it.cause().printStackTrace()
             }
