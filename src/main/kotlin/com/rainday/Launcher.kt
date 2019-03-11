@@ -9,6 +9,7 @@ import io.vertx.core.VertxOptions
 import io.vertx.core.impl.launcher.VertxCommandLauncher
 import io.vertx.core.impl.launcher.VertxLifecycleHooks
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.micrometer.vertxInfluxDbOptionsOf
 
 /**
  * Created by wyd on 2019/2/28 15:40:53.
@@ -34,19 +35,8 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
             )
             //关闭dns
             System.setProperty("vertx.disableDnsResolver", "true")
-
             Launcher().dispatch(args)
         }
-    }
-
-    /**
-     * Utility method to execute a specific command.
-     *
-     * @param cmd  the command
-     * @param args the arguments
-     */
-    fun executeCommand(cmd: String, vararg args: String) {
-        Launcher().execute(cmd, *args)
     }
 
     /**
@@ -62,7 +52,7 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
      * @param options the configured Vert.x options. Modify them to customize the Vert.x instance.
      */
     override fun beforeStartingVertx(options: VertxOptions) {
-
+        println(options.toString())
     }
 
     /**
@@ -71,6 +61,7 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
      * @param vertx the created Vert.x instance
      */
     override fun afterStartingVertx(vertx: Vertx) {
+        println(vertx)
 
     }
 

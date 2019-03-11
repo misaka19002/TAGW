@@ -1,0 +1,30 @@
+[
+  {
+    "fromPath": "/jianshu/p/:pid",
+    "fromMethod": "GET",
+    "toPath": "https://www.jianshu.com/p/{0}",
+    "toMethod": "GET",
+    "params": [
+      {
+        "fromName": "pid",
+        "fromType": "path",
+        "toName": "p1",
+        "toType": "path"
+      }
+    ]
+  },
+  {
+    "fromPath": "/jianshu1/p/:pid",
+    "fromMethod": "GET",
+    "toPath": "https://www.jianshu.com/p/{0}",
+    "toMethod": "GET",
+    "params": [
+      {
+        "fromName": "pid",
+        "fromType": "path",
+        "toName": "p1",
+        "toType": "path"
+      }
+    ]
+  }
+]

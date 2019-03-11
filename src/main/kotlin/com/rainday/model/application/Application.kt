@@ -1,5 +1,7 @@
 package com.rainday.model.application
 
+import com.rainday.annotation.noArgs
+
 /**
  * Created by wyd on 2019/3/1 10:17:58.
  */
@@ -8,9 +10,10 @@ package com.rainday.model.application
  * @param port app占用的端口
  * @param description app的介绍
  */
+@noArgs
 data class Application(
     val appName: String,
     val port: Int,
     val description: String,
-    var deployId: String = ""
+    var deployId: String
 )
