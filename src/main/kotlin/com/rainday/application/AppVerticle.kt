@@ -9,6 +9,7 @@ import io.vertx.core.Context
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.streams.Pump
@@ -104,19 +105,30 @@ class AppVerticle : AbstractVerticle() {
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
         val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
         toPath = toPath.format(rc.pathParam("pid"))
-        val httpClientRequest = httpclient.requestAbs(httpMethod, toPath)
-        httpClientRequest.headers().addAll(rc.request().headers())
+        println(toPath)
+        toPath = "https://www.jianshu.com/p/7fdd234cb52b"
+        val clientRequest = httpclient.requestAbs(httpMethod, toPath)
+        clientRequest.headers().addAll(rc.request().headers())
+        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers())}")
 
         //将收到的数据打到后端服务器，可以认为是透传模式
         //todo 后续添加参数变形模式
-        Pump.pump(rc.request(), httpClientRequest).start()
+        Pump.pump(rc.request(), clientRequest).start()
         //请求结束
         rc.request().endHandler {
-            httpClientRequest.end()
+            println("client trigger endHandler")
+            clientRequest.end()
         }
 
         //后端结果handler,使用数据泵将数据打回用户浏览器
-        httpClientRequest.handler {
+        clientRequest.handler {
+            println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers())}")
+            println("clientRequest handler 处理response ")
+            println("clientRequest 发送请求时headers ${Json.encode(it.headers())}")
+            rc.response().headers().addAll(it.headers())
+            it.bodyHandler {
+                println(it.toString())
+            }
             Pump.pump(it, rc.response()).start()
         }
     }

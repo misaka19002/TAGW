@@ -9,7 +9,6 @@ import io.vertx.core.VertxOptions
 import io.vertx.core.impl.launcher.VertxCommandLauncher
 import io.vertx.core.impl.launcher.VertxLifecycleHooks
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.micrometer.vertxInfluxDbOptionsOf
 
 /**
  * Created by wyd on 2019/2/28 15:40:53.
