@@ -126,9 +126,6 @@ class AppVerticle : AbstractVerticle() {
             println("clientRequest handler 处理response ")
             println("clientRequest 发送请求时headers ${Json.encode(it.headers())}")
             rc.response().headers().addAll(it.headers())
-            it.bodyHandler {
-                println(it.toString())
-            }
             Pump.pump(it, rc.response()).start()
         }
     }
