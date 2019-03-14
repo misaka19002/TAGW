@@ -1,35 +1,12 @@
 package com.rainday.model
 
+import com.rainday.annotation.noArgs
+
 /**
  * Created by wyd on 2019/2/28 17:29:42.
  */
-/**
- *  @param prefix path前缀
- *  @param path 请求路径
- *  @param variables 参数列表
- *  */
-data class Outside(
-    val prefix: String,
-    val path: String,
-    val variables: List<Variable>
-)
+@noArgs
+data class Relay(var outUrl: String, var transmission: Boolean, var status: Status, var paramPairs: List<ParamPair>)
 
-/**
- * @param type0 参数类型
- * @param type 参数类型
- * @param name0 收到的参数
- * @param name1 中继至后端server时，对应的参数名
- */
-data class Variable(
-    val type0: VarType,
-    val name0: String,
-    val name1: String,
-    val type1: VarType
-)
-
-/**
- * 参数类型
- */
-enum class VarType {
-    PathVariable, RequestParam, RequestBody;
-}
+@noArgs
+data class ParamPair(var inName: String, var inType: ParamType, var outName: String, var outType: ParamType)

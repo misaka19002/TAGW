@@ -5,7 +5,7 @@ buildscript {
     repositories {
         mavenLocal()
         maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
-        maven { url 'http://mirrors.163.com/maven/repository/maven-central' }
+//        maven { url 'http://mirrors.163.com/maven/repository/maven-central' }
         mavenCentral()
         jcenter()
     }
@@ -25,7 +25,7 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
-        maven { url 'http://mirrors.163.com/maven/repository/maven-central' }
+//        maven { url 'http://mirrors.163.com/maven/repository/maven-central' }
         mavenCentral()
         jcenter()
     }
@@ -63,6 +63,9 @@ dependencies {
 
     //jsr规范
     implementation 'javax.ws.rs:javax.ws.rs-api:latest.release'
+
+    //embeddeddb
+    implementation 'com.h2database:h2:latest.release'
 
     //testCompile
     testCompile 'org.spockframework:spock-core:latest.release'

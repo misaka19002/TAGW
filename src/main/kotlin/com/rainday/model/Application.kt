@@ -11,6 +11,7 @@ import com.rainday.annotation.noArgs
  * @param description app的介绍
  * @param deployId 部署ID
  * @param status APP状态
+ * @param relays 当前app中管理的接口列表(可空，此时相当于代理)
  */
 @noArgs
 data class Application(
@@ -18,5 +19,6 @@ data class Application(
     val port: Int,
     val description: String,
     var deployId: String,
-    var status: AppStatus
+    var status: Status,
+    var relays: List<Relay>
 )

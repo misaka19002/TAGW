@@ -13,9 +13,9 @@ import io.vertx.core.json.JsonObject
  */
 class ProjectInfoVerticle : AbstractVerticle() {
 
-    val piMap_deployId = HashMap<String, Application>()
-    val piMap_appName = HashMap< String, Application>()
-    val eventBus by lazy { vertx.eventBus() }
+    private val piMap_deployId = HashMap<String, Application>()
+    private val piMap_appName = HashMap< String, Application>()
+    private val eventBus by lazy { vertx.eventBus() }
 
     override fun start() {
         super.start()
