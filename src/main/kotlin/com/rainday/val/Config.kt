@@ -9,5 +9,5 @@ import java.util.*
 val EB_APP_DEPLOY = "app-management-deploy"
 val EB_APP_UNDEPLOY = "app-management-undeploy"
 
-val FIND_ONE_APP = UUID.randomUUID().toString()
-val FIND_ALL_APP = UUID.randomUUID().toString()
+val QUERY_APP = UUID.randomUUID().toString()
+val FIND_APP = UUID.randomUUID().toString()

@@ -1,9 +1,9 @@
 package com.rainday.application
 
 import com.rainday.`val`.EB_APP_DEPLOY
-import com.rainday.`val`.FIND_ALL_APP
-import com.rainday.`val`.FIND_ONE_APP
-import com.rainday.model.application.Application
+import com.rainday.`val`.FIND_APP
+import com.rainday.`val`.QUERY_APP
+import com.rainday.model.Application
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -29,15 +29,16 @@ class ProjectInfoVerticle : AbstractVerticle() {
             piMap_appName[application.appName] = application
         }
 
-        //根据appName查询已发布vercicle 的信息
-        eventBus.localConsumer<String>(FIND_ONE_APP){
-            val appName = it.body()
-            println("consumer received ${appName}")
-            it.reply(piMap_appName[appName])
+        //根据 deployId 查询已发布vercicle 的信息
+        eventBus.localConsumer<String>(FIND_APP){
+            val deployId = it.body()
+            println("consumer received deployId ${deployId}")
+            it.reply(piMap_deployId[deployId])
         }
 
-        //查询所有app
-        eventBus.localConsumer<String>(FIND_ALL_APP){
+        //查询app
+        eventBus.localConsumer<String>(QUERY_APP){
+            //todo 查询功能待完善
             it.reply(Json.encode(piMap_appName))
         }
     }

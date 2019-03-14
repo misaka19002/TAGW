@@ -15,6 +15,9 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.streams.Pump
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
+import io.vertx.ext.web.client.WebClient
+import io.vertx.ext.web.client.WebClientOptions
+import java.net.URL
 
 /**
  * Created by wyd on 2019/3/1 10:16:53.
@@ -33,6 +36,10 @@ class AppVerticle : AbstractVerticle() {
                 .setIdleTimeout(defaultTime)
                 .setKeepAliveTimeout(defaultTime)
         )//时间单位默认 秒
+    }
+
+    private val webClient by lazy {
+        WebClient.create(vertx, WebClientOptions().setKeepAliveTimeout(defaultTime).setUserAgent("tagw/1.0.0"))
     }
 
     private val fake = JsonArray(
@@ -83,7 +90,7 @@ class AppVerticle : AbstractVerticle() {
             //绑定handler
             this.router.route(it.getString("fromPath"))
                 .method(HttpMethod.valueOf(it.getString("fromMethod")))
-                .handler(this::relay)
+                .handler(this::relayHttpClient)
                 .failureHandler(null)
                 .bindInfo(it, routeExtInfoMap)
 
@@ -100,34 +107,53 @@ class AppVerticle : AbstractVerticle() {
         rc.response().end(JsonArray(router.routes).toString())
     }
 
-    fun relay(rc: RoutingContext) {
+    fun relayHttpClient(rc: RoutingContext) {
         var toPath = rc.currentRoute().toPath(routeExtInfoMap)
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
         val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
         toPath = toPath.format(rc.pathParam("pid"))
         println(toPath)
-        toPath = "https://www.jianshu.com/p/7fdd234cb52b"
+        toPath = "http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859"
+        URL("http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859")
         val clientRequest = httpclient.requestAbs(httpMethod, toPath)
-        clientRequest.headers().addAll(rc.request().headers())
-        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers())}")
+        clientRequest.headers().addAll(rc.request().headers().set("host",clientRequest.absoluteURI()))
+
+        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
 
         //将收到的数据打到后端服务器，可以认为是透传模式
         //todo 后续添加参数变形模式
         Pump.pump(rc.request(), clientRequest).start()
         //请求结束
         rc.request().endHandler {
-            println("client trigger endHandler")
+            println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
             clientRequest.end()
         }
 
         //后端结果handler,使用数据泵将数据打回用户浏览器
         clientRequest.handler {
-            println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers())}")
+            println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
             println("clientRequest handler 处理response ")
-            println("clientRequest 发送请求时headers ${Json.encode(it.headers())}")
+            println("clientRequest response header ${Json.encode(it.headers().entries())}")
             rc.response().headers().addAll(it.headers())
             Pump.pump(it, rc.response()).start()
+            it.endHandler {
+                println("client.response trigger endHandler --------- connection: ${clientRequest.connection()}")
+                rc.response().end()
+            }
         }
+    }
+
+    fun relayWebClient(rc: RoutingContext) {
+        var toPath = rc.currentRoute().toPath(routeExtInfoMap)
+        val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
+        val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
+        toPath = toPath.format(rc.pathParam("pid"))
+        println(toPath)
+        toPath = "https://www.jianshu.com/p/7fdd234cb52b"
+        val clientRequest = webClient.requestAbs(httpMethod, toPath)
+        clientRequest.headers().addAll(rc.request().headers())
+        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
+
     }
 }
 

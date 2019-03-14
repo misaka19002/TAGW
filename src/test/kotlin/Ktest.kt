@@ -1,8 +1,7 @@
-import com.rainday.model.application.Application
+import com.rainday.model.Application
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import org.junit.Test
-import spock.lang.Specification
 
 /**
  * Created by wyd on 2019/2/28 15:41:46.
@@ -20,7 +19,7 @@ class Ktest {
                     "}"
         )
 
-        Application(appName = ",",port = 33,description = "sd", deployId = "")
+        Application(appName = ",", port = 33, description = "sd", deployId = "")
 
         Json.mapper.readValue<Application>(json.toString(), Application::class.java)
 

@@ -1,10 +1,7 @@
 package com.rainday
 
 import com.rainday.application.ProjectInfoVerticle
-import com.rainday.handler.Global404Handler
-import com.rainday.handler.Global413Handler
-import com.rainday.handler.allApps
-import com.rainday.handler.deployApp
+import com.rainday.handler.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
@@ -32,8 +29,21 @@ class BootstrapVerticle : AbstractVerticle() {
         router.errorHandler(Response.Status.NOT_FOUND.statusCode, ::Global404Handler)
         router.errorHandler(Response.Status.REQUEST_ENTITY_TOO_LARGE.statusCode, ::Global413Handler)
         router.route("/*").handler(BodyHandler.create())
-        router.put("/app/add").consumes(MediaType.APPLICATION_JSON).handler(::deployApp)
-        router.get("/apps").handler(::allApps)
+        /* 查询可以有附加条件APP */
+        router.get("/apps").handler(::queryApp)
+
+        /* 部署新的APP */
+        router.post("/apps").consumes(MediaType.APPLICATION_JSON).handler(::deployApp)
+
+        /* 查询某个APP */
+        router.get("/apps/:deployId").handler(::findApp)
+
+        /* 更新某个APP - 辅助字段action存在在header中用来决定具体是哪种类型的更新 */
+        router.put("/apps/:deployId/").handler(::updateApp)
+
+        /* 删除某个APP */
+        router.delete("/apps/:deployId").handler(::deleteApp)
+
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("http.port"))
@@ -41,6 +51,7 @@ class BootstrapVerticle : AbstractVerticle() {
         vertx.deployVerticle(ProjectInfoVerticle()){
             if (it.succeeded()) {
                 println("tagw start successfully")
+                println("所有depIds： ${vertx.deploymentIDs()}")
             } else {
                 it.cause().printStackTrace()
             }
