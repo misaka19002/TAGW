@@ -4,8 +4,8 @@ import com.rainday.`val`.EB_APP_DEPLOY
 import com.rainday.`val`.FIND_APP
 import com.rainday.`val`.QUERY_APP
 import com.rainday.application.AppVerticle
-import com.rainday.model.AppStatus
 import com.rainday.model.Application
+import com.rainday.model.Status
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -48,12 +48,12 @@ fun updateApp(rc: RoutingContext) {
     val vertx = rc.vertx()
     val request = rc.request()
 
-    val status = AppStatus.valueOf(request.getHeader("status"))
+    val status = Status.valueOf(request.getHeader("status"))
     val deployId = rc.pathParam("deployId")
     //todo 这里校验update的app必须是存在的。
     when (status) {
         //deploy app
-        AppStatus.active -> {
+        Status.active -> {
             //todo 获取deployOption projectInfoVerticle
             //step1 : 根据id获取application信息
             val application = rc.bodyAsJson.mapTo(Application::class.java)
@@ -67,7 +67,7 @@ fun updateApp(rc: RoutingContext) {
             }
         }
         //undeploy app
-        AppStatus.inactive -> {
+        Status.inactive -> {
             vertx.undeploy(deployId) {
                 if (it.succeeded()) {
                     rc.response().end("${status} 成功")

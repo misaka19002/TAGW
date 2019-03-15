@@ -8,7 +8,6 @@ class TestUtil {
         int i = 0
         //!null = true
         while (!result && (i < timeout)) {
-            println result
             sleep(1)
             i++
         }
