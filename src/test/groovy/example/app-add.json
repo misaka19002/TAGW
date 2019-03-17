@@ -1,0 +1,52 @@
+/*
+
+val appName: String,
+    val port: Int,
+    val description: String,
+    var deployId: String,
+    var status: Status,
+    var relays: List<Relay>*/
+
+//var outUrl: String, var transmission: Boolean, var status: Status, var paramPairs: List<ParamPair>
+//var inName: String, var inType: ParamType, var outName: String, var outType: ParamType
+// inbound: 入境 outbound：出境
+{
+  "appName": "app1",
+  "port": 8081,
+  "description": "这是一个测试的app",
+  "status": "active",
+  "relays": [
+    {
+      "inUrl": "/relay/jianshu/1/:pid",
+      "inMethod": "GET",
+      "outUrl": "https://www.jianshu.com/p/:pid",
+      "outMethod": "GET",
+      "transmission": true,
+      "status": "active",
+      "paramPairs": [
+        {
+          "inName": "pid",
+          "inType": "path",
+          "outName": "pid",
+          "outType": "path"
+        }
+      ]
+    },
+    {
+      "inUrl": "/relay/jianshu/2/:pid",
+      "inMethod": "GET",
+      "outUrl": "https://www.jianshu.com/p/:pid",
+      "outMethod": "GET",
+      "transmission": true,
+      "status": "active",
+      "paramPairs": [
+        {
+          "inName": "pid",
+          "inType": "path",
+          "outName": "pid",
+          "outType": "path"
+        }
+      ]
+    }
+  ]
+}

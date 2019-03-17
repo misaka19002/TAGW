@@ -39,7 +39,7 @@ class BootstrapVerticle : AbstractVerticle() {
         router.get("/apps/:deployId").handler(::findApp)
 
         /* 更新某个APP - 辅助字段action存在在header中用来决定具体是哪种类型的更新 */
-        router.put("/apps/:deployId/").handler(::updateApp)
+        router.put("/apps/:deployId/").consumes(MediaType.APPLICATION_JSON).handler(::updateApp)
 
         /* 删除某个APP */
         router.delete("/apps/:deployId").handler(::deleteApp)

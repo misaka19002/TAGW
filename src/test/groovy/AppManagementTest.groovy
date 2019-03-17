@@ -1,3 +1,4 @@
+import io.vertx.core.json.JsonObject
 import spock.lang.Specification
 
 class AppManagementTest extends Specification {
@@ -10,6 +11,17 @@ class AppManagementTest extends Specification {
         Launcher().main(args)
         then: ""
         1==1
+
+    }
+
+    def "sfsdf"() {
+        given: ""
+        def json = new JsonObject()
+        when: "sdf"
+        def d = json.getJsonArray("aa")
+        println d
+        then: "check"
+        d == null
 
     }
 }

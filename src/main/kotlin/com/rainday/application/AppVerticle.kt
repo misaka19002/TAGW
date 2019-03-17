@@ -1,9 +1,6 @@
 package com.rainday.application
 
-import com.rainday.model.bindInfo
-import com.rainday.model.getBindInfo
-import com.rainday.model.toMethod
-import com.rainday.model.toPath
+import com.rainday.model.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
@@ -42,67 +39,30 @@ class AppVerticle : AbstractVerticle() {
         WebClient.create(vertx, WebClientOptions().setKeepAliveTimeout(defaultTime).setUserAgent("tagw/1.0.0"))
     }
 
-    private val fake = JsonArray(
-        "[\n" +
-                "  {\n" +
-                "    \"fromPath\": \"/jianshu/p/:pid\",\n" +
-                "    \"fromMethod\": \"GET\",\n" +
-                "    \"toPath\": \"https://www.jianshu.com/p/%s\",\n" +
-                "    \"toMethod\": \"GET\",\n" +
-                "    \"params\": [\n" +
-                "      {\n" +
-                "        \"fromName\": \"pid\",\n" +
-                "        \"fromType\": \"path\",\n" +
-                "        \"toName\": \"p1\",\n" +
-                "        \"toType\": \"path\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"fromPath\": \"/jianshu1/p/:pid\",\n" +
-                "    \"fromMethod\": \"GET\",\n" +
-                "    \"toPath\": \"https://www.jianshu.com/p/%s\",\n" +
-                "    \"toMethod\": \"GET\",\n" +
-                "    \"params\": [\n" +
-                "      {\n" +
-                "        \"fromName\": \"pid\",\n" +
-                "        \"fromType\": \"path\",\n" +
-                "        \"toName\": \"p1\",\n" +
-                "        \"toType\": \"path\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]"
-    )
-
-    override fun init(vertx: Vertx?, context: Context?) {
+    override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
         //初始化路由，管理本app 的route
         router.get("/routes").handler(this::listRoutes)
-
-    }
-
-    override fun start() {
-        super.start()
-
-        //造数据, 业务请求转发处理
-        fake.map(JsonObject::mapFrom).forEach {
-            //绑定handler
-            this.router.route(it.getString("fromPath"))
-                .method(HttpMethod.valueOf(it.getString("fromMethod")))
-                .handler(this::relayHttpClient)
-                .failureHandler(null)
-                .bindInfo(it, routeExtInfoMap)
-
-            //将fromPath与头怕
-        }
-
         //启动本app
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("port"))
     }
 
+    override fun start() {
+        super.start()
+        //根据参数设置 route。inUrl重复，不会生效此条route
+
+        val relays = config().getJsonArray("relays")
+        relays?.map(JsonObject::mapFrom)?.forEach {
+            val relay = it?.mapTo(Relay::class.java)
+            if (relay != null) {
+                router.route(relay.inMethod, relay.inUrl).handler(this::relayHttpClient)
+            }
+        }
+    }
+
+    /* 返回当前所有的route */
     fun listRoutes(rc: RoutingContext) {
         rc.response().end(JsonArray(router.routes).toString())
     }
@@ -119,8 +79,7 @@ class AppVerticle : AbstractVerticle() {
         clientRequest.headers().addAll(rc.request().headers().set("host",clientRequest.absoluteURI()))
 
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-
-        //将收到的数据打到后端服务器，可以认为是透传模式
+        //将收到的数据打到后端服务器，可以认为是透传模式。透传-将inboundbody传个后端服务器
         //todo 后续添加参数变形模式
         Pump.pump(rc.request(), clientRequest).start()
         //请求结束
@@ -156,5 +115,4 @@ class AppVerticle : AbstractVerticle() {
 
     }
 }
-
 
