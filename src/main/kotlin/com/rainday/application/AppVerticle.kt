@@ -1,11 +1,11 @@
 package com.rainday.application
 
+import com.rainday.`val`.routeExtInfoMap
 import com.rainday.model.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientOptions
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -24,7 +24,6 @@ import java.net.URL
  */
 class AppVerticle : AbstractVerticle() {
     private val defaultTime = 10
-    private val routeExtInfoMap = HashMap<Int, JsonObject>()
 
     private val router by lazy { Router.router(vertx) }
     private val httpclient by lazy {
@@ -57,7 +56,8 @@ class AppVerticle : AbstractVerticle() {
         relays?.map(JsonObject::mapFrom)?.forEach {
             val relay = it?.mapTo(Relay::class.java)
             if (relay != null) {
-                router.route(relay.inMethod, relay.inUrl).handler(this::relayHttpClient)
+                val route = router.route(relay.inMethod, relay.inUrl.path).handler(this::relayHttpClient)
+                routeExtInfoMap.put(route.hashCode(), relay)
             }
         }
     }
@@ -71,11 +71,9 @@ class AppVerticle : AbstractVerticle() {
         var toPath = rc.currentRoute().toPath(routeExtInfoMap)
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
         val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
-        toPath = toPath.format(rc.pathParam("pid"))
-        println(toPath)
-        toPath = "http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859"
+        println(toPath.toString())
         URL("http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859")
-        val clientRequest = httpclient.requestAbs(httpMethod, toPath)
+        val clientRequest = httpclient.requestAbs(httpMethod, toPath.toString())
         clientRequest.headers().addAll(rc.request().headers().set("host",clientRequest.absoluteURI()))
 
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
@@ -106,10 +104,7 @@ class AppVerticle : AbstractVerticle() {
         var toPath = rc.currentRoute().toPath(routeExtInfoMap)
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
         val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
-        toPath = toPath.format(rc.pathParam("pid"))
-        println(toPath)
-        toPath = "https://www.jianshu.com/p/7fdd234cb52b"
-        val clientRequest = webClient.requestAbs(httpMethod, toPath)
+        val clientRequest = webClient.requestAbs(httpMethod, toPath.toString())
         clientRequest.headers().addAll(rc.request().headers())
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
 
