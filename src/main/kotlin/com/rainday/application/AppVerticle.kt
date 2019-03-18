@@ -10,11 +10,13 @@ import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.streams.Pump
+import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import java.net.URL
+import java.util.stream.Collectors
 
 /**
  * Created by wyd on 2019/3/1 10:16:53.
@@ -64,7 +66,9 @@ class AppVerticle : AbstractVerticle() {
 
     /* 返回当前所有的route */
     fun listRoutes(rc: RoutingContext) {
-        rc.response().end(JsonArray(router.routes).toString())
+        //剔除掉系统信息的route
+        val result = router.routes.map { routeExtInfoMap[it.hashCode()] }.filterNotNull()
+        rc.response().end(Json.encodePrettily(result))
     }
 
     fun relayHttpClient(rc: RoutingContext) {
@@ -74,7 +78,7 @@ class AppVerticle : AbstractVerticle() {
         println(toPath.toString())
         URL("http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859")
         val clientRequest = httpclient.requestAbs(httpMethod, toPath.toString())
-        clientRequest.headers().addAll(rc.request().headers().set("host",clientRequest.absoluteURI()))
+        clientRequest.headers().addAll(rc.request().headers().set("host", clientRequest.absoluteURI()))
 
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
         //将收到的数据打到后端服务器，可以认为是透传模式。透传-将inboundbody传个后端服务器
