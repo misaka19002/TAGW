@@ -16,6 +16,7 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import java.net.URL
+import java.util.*
 import java.util.stream.Collectors
 
 /**
@@ -26,7 +27,6 @@ import java.util.stream.Collectors
  */
 class AppVerticle : AbstractVerticle() {
     private val defaultTime = 10
-
     private val router by lazy { Router.router(vertx) }
     private val httpclient by lazy {
         vertx.createHttpClient(

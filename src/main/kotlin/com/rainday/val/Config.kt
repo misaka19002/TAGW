@@ -16,5 +16,6 @@ val appExtInfoMap = HashMap<String, Application>()
 val EB_APP_DEPLOY = "app-management-deploy"
 val EB_APP_UNDEPLOY = "app-management-undeploy"
 
-val QUERY_APP = UUID.randomUUID().toString()
-val FIND_APP = UUID.randomUUID().toString()
+val QUERY_APP_BYNAME = UUID.randomUUID().toString()
+val FIND_APP_BYNAME = UUID.randomUUID().toString()
+val FIND_APP_BYID = UUID.randomUUID().toString()

@@ -1,9 +1,8 @@
 package com.rainday.handler
 
-import com.rainday.`val`.EB_APP_DEPLOY
-import com.rainday.`val`.FIND_APP
-import com.rainday.`val`.QUERY_APP
+import com.rainday.`val`.*
 import com.rainday.application.AppVerticle
+import com.rainday.ext.toJsonObject
 import com.rainday.model.Application
 import com.rainday.model.Status
 import io.vertx.core.DeploymentOptions
@@ -20,23 +19,32 @@ import javax.ws.rs.core.Response
  * 部署app
  */
 fun deployApp(rc: RoutingContext) {
-    val application = rc.bodyAsJson.mapTo(Application::class.java)
     val vertx = rc.vertx()
+    val application = rc.bodyAsJson.mapTo(Application::class.java)
+    //deploy之前先查询，如果已经存在则直接返回
+    vertx.eventBus().send<JsonObject>(FIND_APP_BYNAME, application.appName) {
+        if (it.succeeded() && it.result().body() == null) {
+            //不存在继续deploy
+            val deployOption = DeploymentOptions().setConfig(application.toJsonObject())
+            vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
+                if (it.succeeded()) {
+                    //设置deployId
+                    application.deployId = it.result()
 
-    val deployOption = DeploymentOptions().setConfig(JsonObject(Json.encode(application)))
-    vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
-        if (it.succeeded()) {
-            //设置deployId
-            application.deployId = it.result()
-
-            val json = JsonObject.mapFrom(application)
-            vertx.eventBus().send(EB_APP_DEPLOY, json)
-            rc.response().setStatusCode(Response.Status.CREATED.statusCode)
-                .setStatusMessage(Response.Status.CREATED.name)
-                .putHeader("location", "/apps/${application.deployId}")
-                .end()
+                    val json = JsonObject.mapFrom(application)
+                    vertx.eventBus().send(EB_APP_DEPLOY, json)
+                    rc.response().setStatusCode(Response.Status.CREATED.statusCode)
+                        .setStatusMessage(Response.Status.CREATED.name)
+                        .putHeader("location", "/apps/${application.deployId}")
+                        .end()
+                } else {
+                    rc.response().end("部署失败.原因：${it.cause().message}")
+                }
+            }
         } else {
-            rc.response().end("部署失败.原因：${it.cause().message}")
+            rc.response().setStatusCode(Response.Status.OK.statusCode)
+                .setStatusMessage(Response.Status.OK.name)
+                .end(it.result().body().toString())
         }
     }
 }
@@ -94,7 +102,7 @@ fun deleteApp(rc: RoutingContext) {
  * 根据条件查询APP
  */
 fun queryApp(rc: RoutingContext) {
-    rc.vertx().eventBus().send<String>(QUERY_APP, "") {
+    rc.vertx().eventBus().send<String>(QUERY_APP_BYNAME, "") {
         rc.response().end(it.result().body())
     }
 }
@@ -104,7 +112,7 @@ fun queryApp(rc: RoutingContext) {
  */
 fun findApp(rc: RoutingContext) {
     val deployId = rc.pathParam("deployId")
-    rc.vertx().eventBus().send<String>(FIND_APP, deployId) {
+    rc.vertx().eventBus().send<String>(FIND_APP_BYNAME, deployId) {
         rc.response().end(it.result().body())
     }
 }
@@ -122,4 +130,11 @@ fun appUniqueCheck(rc: RoutingContext) {
         it.result().body().deployId
     }
 
+}
+
+/**
+ * 查询所有verticle
+ */
+fun showVerticles(rc: RoutingContext) {
+    rc.response().end(rc.vertx().deploymentIDs().toString())
 }

@@ -46,6 +46,9 @@ class BootstrapVerticle : AbstractVerticle() {
         /* 删除某个APP */
         router.delete("/apps/:deployId").handler(::deleteApp)
 
+        /* 查看所有verticle */
+        router.get("/verticles").handler(::showVerticles)
+
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("http.port") ?: defaultPort)
