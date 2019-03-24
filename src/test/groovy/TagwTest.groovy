@@ -1,3 +1,4 @@
+import com.UrlTemplate
 import com.rainday.handler.RelayHandlerKt
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
@@ -16,8 +17,8 @@ import util.TestUtil
 class TagwTest extends Specification {
     //设置dns为8.8.8.8
     def addressResolverOptions = new AddressResolverOptions()
-    .setNdots(1)
-    .setServers(Arrays.asList("114.114.114.114"))
+            .setNdots(1)
+            .setServers(Arrays.asList("114.114.114.114"))
 //    .setServers(Arrays.asList("8.8.8.8"))
 //    .setSearchDomains(Arrays.asList(".com"))
     def vxOption = new VertxOptions().setAddressResolverOptions(addressResolverOptions)
@@ -77,7 +78,7 @@ class TagwTest extends Specification {
         clientRequest.end()
 
         then: "check the result"
-        condition.within(2){
+        condition.within(2) {
             response.statusCode() == 200
         }
         condition.eventually {
@@ -101,7 +102,7 @@ class TagwTest extends Specification {
         clientRequest.handler({
             statusCode.set(it.statusCode())
             it.handler({
-                results.setProperty("body",it.toString())
+                results.setProperty("body", it.toString())
             })
 
         })
@@ -146,6 +147,56 @@ class TagwTest extends Specification {
         def max = Math.max(m, n)
         then: "get max num"
         max == 3
+    }
+
+    def "urltemplate test path"() {
+        given: "给定单数"
+//        def map = new HashMap() {
+//            {
+//                put("a", "aaa"); put("b", "bbb")
+//            }
+//        }
+        when: "执行格式化"
+        def rt = new UrlTemplate(url).setPathParam(p1, p2).setPathParam(p3, p4).setQueryParam("","").toString()
+        then: "期望结果"
+        rt == res
+        where: "条件"
+        url                  | p1  | p2   | p3  | p4   | res
+        "http://a.com/:a:b"  | "a" | "aa" | "b" | "bb" | "http://a.com/aabb"
+        "http://a.com/:a/:b" | "a" | "tt" | "b" | "cc" | "http://a.com/tt/cc"
+        "http://a.com/:a/:b" | "a" | "tt" | "b" | "cc1" | "http://a.com/tt/cc"
+    }
+
+    def "urltemplate test query"() {
+        given: "给定单数"
+        def map = new HashMap() {
+            {
+                put("a", "aaa"); put("b", "bbb")
+            }
+        }
+        when: "执行格式化"
+
+        then: "期望结果"
+
+        where: "条件"
+        url                 | income | res
+        "http://a.com/:a:b" | map    | "http://a.com/aaa/bbb"
+    }
+
+    def "urltemplate test path&query"() {
+        given: "给定单数"
+        def map = new HashMap() {
+            {
+                put("a", "aaa"); put("b", "bbb")
+            }
+        }
+        when: "执行格式化"
+
+        then: "期望结果"
+
+        where: "条件"
+        url                  | income | res
+        "http://a.com/:a/:b" | map    | "http://a.com/aaa/bbb"
     }
 
 }

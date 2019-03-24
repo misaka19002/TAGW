@@ -19,3 +19,5 @@ val EB_APP_UNDEPLOY = "app-management-undeploy"
 val QUERY_APP_BYNAME = UUID.randomUUID().toString()
 val FIND_APP_BYNAME = UUID.randomUUID().toString()
 val FIND_APP_BYID = UUID.randomUUID().toString()
+
+val DEFAULT_USERAGENT = "TAGW/1.0.0"

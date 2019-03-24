@@ -1,23 +1,21 @@
 package com.rainday.application
 
+import com.rainday.`val`.DEFAULT_USERAGENT
 import com.rainday.`val`.routeExtInfoMap
 import com.rainday.model.*
+import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.json.Json
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.streams.Pump
-import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
-import java.net.URL
-import java.util.*
-import java.util.stream.Collectors
+import javax.ws.rs.core.Response
 
 /**
  * Created by wyd on 2019/3/1 10:16:53.
@@ -37,7 +35,7 @@ class AppVerticle : AbstractVerticle() {
     }
 
     private val webClient by lazy {
-        WebClient.create(vertx, WebClientOptions().setKeepAliveTimeout(defaultTime).setUserAgent("tagw/1.0.0"))
+        WebClient.create(vertx, WebClientOptions().setKeepAliveTimeout(defaultTime).setUserAgent(DEFAULT_USERAGENT))
     }
 
     override fun init(vertx: Vertx, context: Context) {
@@ -74,16 +72,20 @@ class AppVerticle : AbstractVerticle() {
     fun relayHttpClient(rc: RoutingContext) {
         var toPath = rc.currentRoute().toPath(routeExtInfoMap)
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
-        val jsonObject = rc.currentRoute().getBindInfo(routeExtInfoMap)
-        println(toPath.toString())
-        URL("http://mobsec-dianhua.baidu.com/dianhua_api/open/location?tel=15993978859")
-        val clientRequest = httpclient.requestAbs(httpMethod, toPath.toString())
-        clientRequest.headers().addAll(rc.request().headers().set("host", clientRequest.absoluteURI()))
+        val relay = rc.currentRoute().getBindInfo(routeExtInfoMap)
+
+        //使用urltemplate处理参数
+        val template = UrlTemplate(relay?.outUrl.toString())
+        relay?.paramPairs?.forEach {
+            template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
+        }
+        val clientRequest = httpclient.requestAbs(httpMethod, template.toString())
+        clientRequest.headers().addAll(template.headerParamMap)
 
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
         //将收到的数据打到后端服务器，可以认为是透传模式。透传-将inboundbody传个后端服务器
         //todo 后续添加参数变形模式
-        Pump.pump(rc.request(), clientRequest).start()
+//        Pump.pump(rc.request(), clientRequest).start()
         //请求结束
         rc.request().endHandler {
             println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
@@ -102,6 +104,12 @@ class AppVerticle : AbstractVerticle() {
                 rc.response().end()
             }
         }
+
+        clientRequest.exceptionHandler {
+            rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
+                .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
+                .end("请求异常${it.message} ${it.localizedMessage}")
+        }
     }
 
     fun relayWebClient(rc: RoutingContext) {
@@ -111,7 +119,6 @@ class AppVerticle : AbstractVerticle() {
         val clientRequest = webClient.requestAbs(httpMethod, toPath.toString())
         clientRequest.headers().addAll(rc.request().headers())
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-
     }
 }
 

@@ -5,6 +5,7 @@ import com.rainday.application.AppVerticle
 import com.rainday.ext.toJsonObject
 import com.rainday.model.Application
 import com.rainday.model.Status
+import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -33,8 +34,8 @@ fun deployApp(rc: RoutingContext) {
 
                     val json = JsonObject.mapFrom(application)
                     vertx.eventBus().send(EB_APP_DEPLOY, json)
-                    rc.response().setStatusCode(Response.Status.CREATED.statusCode)
-                        .setStatusMessage(Response.Status.CREATED.name)
+                    rc.response().setStatusCode(HttpResponseStatus.CREATED.code())
+                        .setStatusMessage(HttpResponseStatus.CREATED.reasonPhrase())
                         .putHeader("location", "/apps/${application.deployId}")
                         .end()
                 } else {
@@ -42,8 +43,8 @@ fun deployApp(rc: RoutingContext) {
                 }
             }
         } else {
-            rc.response().setStatusCode(Response.Status.OK.statusCode)
-                .setStatusMessage(Response.Status.OK.name)
+            rc.response().setStatusCode(HttpResponseStatus.OK.code())
+                .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
                 .end(it.result().body().toString())
         }
     }
@@ -92,6 +93,8 @@ fun updateApp(rc: RoutingContext) {
  */
 fun deleteApp(rc: RoutingContext) {
     val vertx = rc.vertx()
+    rc.queryParams()
+    rc.request().params()
     //todo 这里校验被删除的APP必须是inactive的
     val deployId = rc.pathParam("deployId")
     //todo 这里删除projectInfoVerticle里的APP数据

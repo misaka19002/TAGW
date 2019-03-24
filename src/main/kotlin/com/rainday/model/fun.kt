@@ -1,8 +1,10 @@
 package com.rainday.model
 
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Route
+import io.vertx.ext.web.RoutingContext
 import java.net.URI
 import java.net.URL
 
@@ -26,13 +28,10 @@ fun Route.getBindInfo(routeExtInfoMap: HashMap<Int, Relay>): Relay? {
     return routeExtInfoMap[this.hashCode()]
 }
 
-
-fun main() {
-    val d = "sss.com/usr/ddf.do?aa=dd&bb=a"
-    val uri = URI(d)
-//    val url = URL(d)
-    println(uri.toString())
-//    println(url.toString())
-//    println(uri.toURL().toString())
-//    println(url.toURI().toString())
+fun RoutingContext.getParameter(paramType: ParamType, paramName: String): String {
+    return when (paramType) {
+        ParamType.path -> this.pathParam(paramName)
+        ParamType.query -> this.queryParams().get(paramName)
+        ParamType.header -> this.request().getHeader(paramName)
+    }
 }

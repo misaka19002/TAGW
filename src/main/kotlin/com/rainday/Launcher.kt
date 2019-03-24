@@ -1,13 +1,15 @@
 package com.rainday
 
+import com.rainday.ext.toJsonString
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import io.vertx.core.DeploymentOptions
-import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
+import io.vertx.core.dns.AddressResolverOptions
 import io.vertx.core.impl.launcher.VertxCommandLauncher
 import io.vertx.core.impl.launcher.VertxLifecycleHooks
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 
 /**
@@ -15,6 +17,10 @@ import io.vertx.core.json.JsonObject
  *
  */
 class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
+    private val DEFAULT_DNS0 = "114.114.114.114"
+    private val DEFAULT_DNS1 = "114.114.115.115"
+    private val DEFAULT_DNS2 = "223.5.5.5"
+    private val DEFAULT_DNS3 = "223.6.6.6"
 
     /**
      * Main entry point.
@@ -24,6 +30,7 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
+            println("jvm starting ...")
             //netty Force to use slf4j
             InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
             //vertx Force to use slf4j
@@ -33,7 +40,7 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
                 //"io.vertx.core.logging.SLF4JLogDelegateFactory"
             )
             //关闭dns
-            System.setProperty("vertx.disableDnsResolver", "true")
+//            System.setProperty("vertx.disableDnsResolver", "true")
             Launcher().dispatch(args)
         }
     }
@@ -51,7 +58,14 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
      * @param options the configured Vert.x options. Modify them to customize the Vert.x instance.
      */
     override fun beforeStartingVertx(options: VertxOptions) {
-        println(options.toString())
+        val addrResolver = AddressResolverOptions()
+            .setQueryTimeout(1000)
+            .addServer(DEFAULT_DNS0)
+            .addServer(DEFAULT_DNS1)
+            .addServer(DEFAULT_DNS2)
+            .addServer(DEFAULT_DNS3)
+        options.addressResolverOptions = addrResolver
+        println(Json.encode(options))
     }
 
     /**

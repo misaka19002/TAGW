@@ -2,6 +2,8 @@ package com.rainday
 
 import com.rainday.application.ProjectInfoVerticle
 import com.rainday.handler.*
+import com.sun.activation.registries.MimeTypeEntry
+import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.DeploymentOptions
@@ -28,8 +30,8 @@ class BootstrapVerticle : AbstractVerticle() {
 
     override fun start() {
         /* 部署application 管理 verticle */
-        router.errorHandler(Response.Status.NOT_FOUND.statusCode, ::Global404Handler)
-        router.errorHandler(Response.Status.REQUEST_ENTITY_TOO_LARGE.statusCode, ::Global413Handler)
+        router.errorHandler(HttpResponseStatus.NOT_FOUND.code(), ::Global404Handler)
+        router.errorHandler(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code(), ::Global413Handler)
         router.route("/*").handler(BodyHandler.create())
         /* 查询可以有附加条件APP */
         router.get("/apps").handler(::queryApp)
