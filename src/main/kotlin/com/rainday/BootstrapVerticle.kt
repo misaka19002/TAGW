@@ -2,7 +2,7 @@ package com.rainday
 
 import com.rainday.application.ProjectInfoVerticle
 import com.rainday.handler.*
-import com.sun.activation.registries.MimeTypeEntry
+import com.rainday.model.addVerticleDeployInfo
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
@@ -11,7 +11,6 @@ import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
 /**
  * Created by wyd on 2019/2/28 17:10:23.
@@ -24,8 +23,9 @@ class BootstrapVerticle : AbstractVerticle() {
     private val defaultPort = 8080
     private val router by lazy { Router.router(vertx) }
 
-    override fun init(vertx: Vertx?, context: Context?) {
+    override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
+        addVerticleDeployInfo(vertx, context)
     }
 
     override fun start() {
@@ -55,14 +55,7 @@ class BootstrapVerticle : AbstractVerticle() {
             .requestHandler(router)
             .listen(config().getInteger("http.port") ?: defaultPort)
         /* 部署projectInfoVerticle */
-        vertx.deployVerticle(ProjectInfoVerticle::class.java, DeploymentOptions()){
-            if (it.succeeded()) {
-                println("tagw start successfully")
-                println("所有depIds： ${vertx.deploymentIDs()}")
-            } else {
-                it.cause().printStackTrace()
-            }
-        }
+        vertx.deployVerticle(ProjectInfoVerticle::class.java, DeploymentOptions())
     }
 
 }

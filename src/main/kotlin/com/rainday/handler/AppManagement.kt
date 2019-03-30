@@ -1,8 +1,12 @@
 package com.rainday.handler
 
-import com.rainday.`val`.*
+import com.rainday.`val`.EB_APP_DEPLOY
+import com.rainday.`val`.FIND_APP_BYNAME
+import com.rainday.`val`.QUERY_APP_BYNAME
+import com.rainday.`val`.VERTICLE_INFO
 import com.rainday.application.AppVerticle
 import com.rainday.ext.toJsonObject
+import com.rainday.ext.toJsonString
 import com.rainday.model.Application
 import com.rainday.model.Status
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -10,7 +14,6 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
-import javax.ws.rs.core.Response
 
 /**
  * Created by wyd on 2019/3/1 11:28:33.
@@ -129,7 +132,6 @@ fun appUniqueCheck(rc: RoutingContext) {
     vertx.eventBus().send<Application>(EB_APP_DEPLOY, appName) {
         println("echo received deploy info ${it.result().body()}")
         val app = it.result().body()
-        app
         it.result().body().deployId
     }
 
@@ -139,5 +141,13 @@ fun appUniqueCheck(rc: RoutingContext) {
  * 查询所有verticle
  */
 fun showVerticles(rc: RoutingContext) {
-    rc.response().end(rc.vertx().deploymentIDs().toString())
+    val vertx = rc.vertx()
+    if (vertx.isClustered) {
+        vertx.sharedData().getClusterWideMap<String, JsonObject>(VERTICLE_INFO) {
+            rc.response().end(it.result().toJsonString())
+        }
+    } else {
+        val localMap = vertx.sharedData().getLocalMap<String, JsonObject>(VERTICLE_INFO)
+        rc.response().end(localMap.toJsonString())
+    }
 }

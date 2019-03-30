@@ -74,8 +74,6 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
      * @param vertx the created Vert.x instance
      */
     override fun afterStartingVertx(vertx: Vertx) {
-        println(vertx)
-
     }
 
     /**

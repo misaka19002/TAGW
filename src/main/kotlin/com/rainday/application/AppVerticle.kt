@@ -10,6 +10,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
+import io.vertx.core.logging.LoggerFactory
 import io.vertx.core.streams.Pump
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
@@ -24,13 +25,14 @@ import javax.ws.rs.core.Response
  * 功能2 请求转发(暂不考虑前置处理器，后置处理器)
  */
 class AppVerticle : AbstractVerticle() {
+    private val logger = LoggerFactory.getLogger(this.javaClass)
     private val defaultTime = 10
     private val router by lazy { Router.router(vertx) }
     private val httpclient by lazy {
         vertx.createHttpClient(
             HttpClientOptions()
                 .setIdleTimeout(defaultTime)
-                .setKeepAliveTimeout(defaultTime)
+                .setKeepAliveTimeout(defaultTime * 2)
         )//时间单位默认 秒
     }
 

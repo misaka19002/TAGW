@@ -10,6 +10,11 @@ import java.util.Date;
  */
 public class HttpclientExample {
 
+    /**
+     * 方法完成
+     * @param args 接受参数
+     * @throws Exception 程序异常直接抛出
+     */
     public static void main(String[] args) throws Exception {
         new Thread(() -> {
 

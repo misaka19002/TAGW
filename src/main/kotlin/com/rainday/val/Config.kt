@@ -21,3 +21,7 @@ val FIND_APP_BYNAME = UUID.randomUUID().toString()
 val FIND_APP_BYID = UUID.randomUUID().toString()
 
 val DEFAULT_USERAGENT = "TAGW/1.0.0"
+
+val VERTICLE_INFO = "verticleinfo"
+
+val APP_INFO = "app_info"

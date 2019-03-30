@@ -30,7 +30,6 @@ allprojects {
         jcenter()
     }
 }
-
 tasks.withType(JavaCompile) { options.encoding = "UTF-8" }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -67,8 +66,8 @@ dependencies {
     //embeddeddb
     implementation 'com.h2database:h2:latest.release'
 
-    //testCompile
-    testCompile 'org.spockframework:spock-core:latest.release'
+    //testImplementation
+    testImplementation 'org.spockframework:spock-core:latest.release'
 }
 
 /*** tasks ***/
@@ -76,8 +75,8 @@ dependencies {
  * 打包fatjar
  * */
 shadowJar {
-    classifier = 'fat'
-    baseName = 'tagw'
+    archiveClassifier = 'fat'
+    archiveBaseName = 'tagw'
     manifest {
         attributes 'Main-Class': 'com.rainday.Launcher'
         attributes 'Main-Verticle': 'com.rainday.BootstrapVerticle'

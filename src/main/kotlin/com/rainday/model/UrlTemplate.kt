@@ -55,10 +55,7 @@ data class UrlTemplate(val rawUrl: String) {
     }
 
     fun setHeaderParam(name: String, value: String): UrlTemplate {
-        queryParamMap.put(
-            URLEncoder.encode(name, Charsets.UTF_8.name()),
-            URLEncoder.encode(value, Charsets.UTF_8.name())
-        )
+        queryParamMap.put(name, value)
         return this
     }
 
