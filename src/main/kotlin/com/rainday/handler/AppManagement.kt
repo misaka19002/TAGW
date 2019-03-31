@@ -37,8 +37,8 @@ fun deployApp(rc: RoutingContext) {
 
                     val json = JsonObject.mapFrom(application)
                     vertx.eventBus().send(EB_APP_DEPLOY, json)
-                    rc.response().setStatusCode(HttpResponseStatus.CREATED.code())
-                        .setStatusMessage(HttpResponseStatus.CREATED.reasonPhrase())
+                    rc.response().setStatusCode(HttpResponseStatus.CONFLICT.code())
+                        .setStatusMessage(HttpResponseStatus.CONFLICT.reasonPhrase())
                         .putHeader("location", "/apps/${application.deployId}")
                         .end()
                 } else {
