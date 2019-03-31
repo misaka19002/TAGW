@@ -29,7 +29,7 @@ fun deployApp(rc: RoutingContext) {
     vertx.eventBus().send<JsonObject>(FIND_APP_BYNAME, application.appName) {
         if (it.succeeded() && it.result().body() == null) {
             //不存在继续deploy
-            val deployOption = DeploymentOptions().setConfig(application.toJsonObject()).setInstances(3)
+            val deployOption = DeploymentOptions().setConfig(application.toJsonObject())
             vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
                 if (it.succeeded()) {
                     //设置deployId
