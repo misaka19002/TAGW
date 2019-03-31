@@ -16,7 +16,6 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
-import javax.ws.rs.core.Response
 
 /**
  * Created by wyd on 2019/3/1 10:16:53.
@@ -42,6 +41,7 @@ class AppVerticle : AbstractVerticle() {
 
     override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
+        addVerticleDeployInfo(vertx, context)
         //初始化路由，管理本app 的route
         router.get("/routes").handler(this::listRoutes)
         //启动本app
@@ -63,6 +63,11 @@ class AppVerticle : AbstractVerticle() {
             }
         }
     }
+    
+    override fun stop() {
+        super.stop()
+        deleteVerticleDeployInfo(vertx, this.deploymentID())
+    }
 
     /* 返回当前所有的route */
     fun listRoutes(rc: RoutingContext) {
@@ -72,6 +77,7 @@ class AppVerticle : AbstractVerticle() {
     }
 
     fun relayHttpClient(rc: RoutingContext) {
+        println(this)
         var toPath = rc.currentRoute().toPath(routeExtInfoMap)
         val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
         val relay = rc.currentRoute().getBindInfo(routeExtInfoMap)

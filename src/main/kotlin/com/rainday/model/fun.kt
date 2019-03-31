@@ -66,3 +66,22 @@ fun addVerticleDeployInfo(vertx: Vertx, context: Context) {
         localMap.put(context.deploymentID(), json)
     }
 }
+
+/**
+ * @author wyd
+ * @date  2019-03-30 20:28
+ * @param vertx : vertx
+ * @param deployId : remove verticle by deloyId
+ * @return : null
+ */
+fun deleteVerticleDeployInfo(vertx: Vertx, deployId: String) {
+    if (vertx.isClustered) {
+        val clusterMap = vertx.sharedData().getClusterWideMap<String, JsonObject>(VERTICLE_INFO) {
+            //get verticle_info map, delete verticle info
+            it.result().remove(deployId) {}
+        }
+    } else {
+        val localMap = vertx.sharedData().getLocalMap<String, JsonObject>(VERTICLE_INFO)
+        localMap.remove(deployId)
+    }
+}

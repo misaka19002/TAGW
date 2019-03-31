@@ -3,6 +3,7 @@ package com.rainday
 import com.rainday.application.ProjectInfoVerticle
 import com.rainday.handler.*
 import com.rainday.model.addVerticleDeployInfo
+import com.rainday.model.deleteVerticleDeployInfo
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
@@ -56,6 +57,11 @@ class BootstrapVerticle : AbstractVerticle() {
             .listen(config().getInteger("http.port") ?: defaultPort)
         /* 部署projectInfoVerticle */
         vertx.deployVerticle(ProjectInfoVerticle::class.java, DeploymentOptions())
+    }
+    
+    override fun stop() {
+        super.stop()
+        deleteVerticleDeployInfo(vertx, this.deploymentID())
     }
 
 }
