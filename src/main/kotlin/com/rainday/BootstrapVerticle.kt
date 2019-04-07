@@ -1,6 +1,6 @@
 package com.rainday
 
-import com.rainday.application.ProjectInfoVerticle
+import com.rainday.application.DataVerticle
 import com.rainday.handler.*
 import com.rainday.model.addVerticleDeployInfo
 import com.rainday.model.deleteVerticleDeployInfo
@@ -44,19 +44,19 @@ class BootstrapVerticle : AbstractVerticle() {
         router.get("/apps/:deployId").handler(::findApp)
 
         /* 更新某个APP - 辅助字段action存在在header中用来决定具体是哪种类型的更新 */
-        router.put("/apps/:deployId/").consumes(MediaType.APPLICATION_JSON).handler(::updateApp)
+        router.put("/apps/:deployId").consumes(MediaType.APPLICATION_JSON).handler(::updateApp)
 
         /* 删除某个APP */
         router.delete("/apps/:deployId").handler(::deleteApp)
 
         /* 查看所有verticle */
         router.get("/verticles").handler(::showVerticles)
-
+        
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("http.port") ?: defaultPort)
         /* 部署projectInfoVerticle */
-        vertx.deployVerticle(ProjectInfoVerticle::class.java, DeploymentOptions())
+        vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions())
     }
     
     override fun stop() {

@@ -16,7 +16,7 @@ data class Relay(
     var outMethod: HttpMethod,
     var transmission: Boolean,
     var status: Status,
-    var paramPairs: List<ParamPair>
+    var paramPairs: List<ParamPair>?
 )
 
 @noArgs

@@ -7,6 +7,7 @@ import com.rainday.`val`.VERTICLE_INFO
 import com.rainday.application.AppVerticle
 import com.rainday.ext.toJsonObject
 import com.rainday.ext.toJsonString
+import com.rainday.model.Action
 import com.rainday.model.Application
 import com.rainday.model.Status
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -59,7 +60,22 @@ fun deployApp(rc: RoutingContext) {
 fun updateApp(rc: RoutingContext) {
     val vertx = rc.vertx()
     val request = rc.request()
-
+    val action = Action.valueOf(request.getHeader("action") ?: "UNKNOWN")
+    when (action) {
+        Action.UPDATE_APPNAME -> updateAppName(rc)
+        Action.UPDATE_APPDESCRIPTION -> updateAppDescription(rc)
+        
+        Action.UPDATE_RELAY -> updateRelay(rc)
+        Action.ADD_RELAY -> addRelay(rc)
+        Action.DELETE_RELAY -> disableRelay(rc)
+        Action.ENABLE_RELAY -> enableRelay(rc)
+        Action.DISABLE_RELAY -> disableRelay(rc)
+        
+        Action.ACTIVE_APP -> activeApp(rc)
+        Action.INACTIVE_APP -> inactiveApp(rc)
+        Action.UNKNOWN -> rc.response().end("未知的非法操作")
+    }
+    
     val status = Status.valueOf(request.getHeader("status"))
     val deployId = rc.pathParam("deployId")
     //todo 这里校验update的app必须是存在的。
@@ -150,4 +166,73 @@ fun showVerticles(rc: RoutingContext) {
         val localMap = vertx.sharedData().getLocalMap<String, JsonObject>(VERTICLE_INFO)
         rc.response().end(localMap.toJsonString())
     }
+}
+
+/**
+ * 修改APP名称
+ */
+fun updateAppName(rc: RoutingContext) {
+    val appName = rc.bodyAsJson.getString("appName", "")
+    val deployId = rc.pathParam("deployId")
+    rc.vertx().eventBus().send<String>(deployId + Action.UPDATE_APPNAME, appName) {
+        if (it.succeeded()) {
+            rc.response().end (it.result().body())
+        }
+    }
+}
+
+/**
+ * 修改APP描述
+ */
+fun updateAppDescription(rc: RoutingContext) {
+    val description = rc.bodyAsJson.getString("description", "")
+    val deployId = rc.pathParam("deployId")
+    rc.vertx().eventBus().send<String>(deployId + Action.UPDATE_APPDESCRIPTION, description) {
+        if (it.succeeded()) {
+            rc.response().end (it.result().body())
+        }
+    }
+}
+
+/**
+ * 激活APP
+ */
+fun activeApp(rc: RoutingContext) {
+
+}
+
+/**
+ * 停止APP
+ */
+fun inactiveApp(rc: RoutingContext) {
+
+}
+
+/**
+ * 修改一个中继规则
+ */
+fun updateRelay(rc: RoutingContext) {
+
+}
+
+/**
+ * 新增一个中继规则
+ */
+fun addRelay(rc: RoutingContext) {
+
+}
+
+/**
+ * 更新一个relay中的部分设置(参考${Action}的说明)。
+ */
+fun enableRelay(rc: RoutingContext) {
+
+}
+
+/**
+ * 更新一个relay中的部分设置(参考${Action}的说明)。
+ */
+fun disableRelay(rc: RoutingContext) {
+
+
 }

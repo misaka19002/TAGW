@@ -88,12 +88,15 @@ class AppVerticle : AbstractVerticle() {
             template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
         }
         val clientRequest = httpclient.requestAbs(httpMethod, template.toString())
+        clientRequest.headers().addAll(rc.request().headers())
+//        clientRequest.putHeader("Content-Type",rc.request().getHeader("Content-Type"))
+//        clientRequest.putHeader("Content-Length",rc.request().getHeader("Content-Length"))
         clientRequest.headers().addAll(template.headerParamMap)
 
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
         //将收到的数据打到后端服务器，可以认为是透传模式。透传-将inboundbody传个后端服务器
         //todo 后续添加参数变形模式
-//        Pump.pump(rc.request(), clientRequest).start()
+        Pump.pump(rc.request(), clientRequest).start()
         //请求结束
         rc.request().endHandler {
             println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
