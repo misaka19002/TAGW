@@ -9,10 +9,8 @@ import com.rainday.ext.toJsonObject
 import com.rainday.ext.toJsonString
 import com.rainday.model.Action
 import com.rainday.model.Application
-import com.rainday.model.Status
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 
@@ -58,52 +56,34 @@ fun deployApp(rc: RoutingContext) {
  * 更新APP状态，根据action执行不同逻辑
  */
 fun updateApp(rc: RoutingContext) {
-    val vertx = rc.vertx()
     val request = rc.request()
     val action = Action.valueOf(request.getHeader("action") ?: "UNKNOWN")
     when (action) {
+        //修改APP名称
         Action.UPDATE_APPNAME -> updateAppName(rc)
+        //修改APP描述
         Action.UPDATE_APPDESCRIPTION -> updateAppDescription(rc)
-        
+
+        //修改relay中的可热更新字段(允许修改的参数为：outUrl,outMethod,transmission, paramPairs(参数对应关系))
         Action.UPDATE_RELAY -> updateRelay(rc)
+        //新增一个relay
         Action.ADD_RELAY -> addRelay(rc)
+        //删除一个relay(删除一个route，以及这个route绑定的转发信息)
         Action.DELETE_RELAY -> disableRelay(rc)
+        //启用一个relay
         Action.ENABLE_RELAY -> enableRelay(rc)
+        //禁用一个relay
         Action.DISABLE_RELAY -> disableRelay(rc)
-        
+
+        //激活一个APP(deploy这个verticle)
         Action.ACTIVE_APP -> activeApp(rc)
+        //关闭一个APP(undeploy这个verticle)
         Action.INACTIVE_APP -> inactiveApp(rc)
-        Action.UNKNOWN -> rc.response().end("未知的非法操作")
-    }
-    
-    val status = Status.valueOf(request.getHeader("status"))
-    val deployId = rc.pathParam("deployId")
-    //todo 这里校验update的app必须是存在的。
-    when (status) {
-        //deploy app
-        Status.active -> {
-            //todo 获取deployOption projectInfoVerticle
-            //step1 : 根据id获取application信息
-            val application = rc.bodyAsJson.mapTo(Application::class.java)
-            val deployOption = DeploymentOptions().setConfig(JsonObject(Json.encode(application)))
-            vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
-                if (it.succeeded()) {
-                    rc.response().end("${status} 成功")
-                } else {
-                    rc.response().end("${status} 失败")
-                }
-            }
-        }
-        //undeploy app
-        Status.inactive -> {
-            vertx.undeploy(deployId) {
-                if (it.succeeded()) {
-                    rc.response().end("${status} 成功")
-                } else {
-                    rc.response().end("${status} 失败")
-                }
-            }
-        }
+        //未知操作
+        Action.UNKNOWN -> rc.response()
+            .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+            .setStatusMessage(HttpResponseStatus.BAD_REQUEST.reasonPhrase())
+            .end("未知的非法操作")
     }
 }
 
