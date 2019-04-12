@@ -1,6 +1,5 @@
 package com.rainday.`val`
 
-import com.rainday.model.Application
 import com.rainday.model.Relay
 import java.util.*
 import kotlin.collections.HashMap
@@ -12,7 +11,6 @@ import kotlin.collections.HashMap
 //路由扩展信息，用来存储route.class的inbound信息及相关信息
 val routeExtInfoMap = HashMap<Int, Relay>()
 //存储当前所有APP
-val appExtInfoMap = HashMap<String, Application>()
 val EB_APP_DEPLOY = "app-management-deploy"
 val EB_APP_UNDEPLOY = "app-management-undeploy"
 
@@ -23,5 +21,4 @@ val FIND_APP_BYID = UUID.randomUUID().toString()
 val DEFAULT_USERAGENT = "TAGW/1.0.0"
 
 val VERTICLE_INFO = "verticleinfo"
-
-val APP_INFO = "app_info"
+val APPLICATION_INFO = "applicationinfo"

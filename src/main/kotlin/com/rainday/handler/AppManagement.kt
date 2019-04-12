@@ -1,6 +1,6 @@
 package com.rainday.handler
 
-import com.rainday.`val`.EB_APP_DEPLOY
+import com.rainday.`val`.APPLICATION_INFO
 import com.rainday.`val`.FIND_APP_BYNAME
 import com.rainday.`val`.QUERY_APP_BYNAME
 import com.rainday.`val`.VERTICLE_INFO
@@ -10,6 +10,7 @@ import com.rainday.ext.toJsonString
 import com.rainday.model.Action
 import com.rainday.model.Application
 import com.rainday.model.Status
+import com.rainday.model.globalPut
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.json.Json
@@ -36,8 +37,9 @@ fun deployApp(rc: RoutingContext) {
                     //设置deployId
                     application.deployId = it.result()
 
-                    val json = JsonObject.mapFrom(application)
-                    vertx.eventBus().send(EB_APP_DEPLOY, json)
+                    val appJson = JsonObject.mapFrom(application)
+                    //将被部署的APP信息存储在全局变量中
+                    vertx.globalPut(APPLICATION_INFO,application.appName,appJson)
                     rc.response().setStatusCode(HttpResponseStatus.OK.code())
                         .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
                         .putHeader("location", "/apps/${application.deployId}")
@@ -137,20 +139,6 @@ fun findApp(rc: RoutingContext) {
     rc.vertx().eventBus().send<String>(FIND_APP_BYNAME, deployId) {
         rc.response().end(it.result().body())
     }
-}
-
-/**
- * app唯一性校验
- */
-fun appUniqueCheck(rc: RoutingContext) {
-    val vertx = rc.vertx()
-    val appName: String by rc.pathParams()
-    vertx.eventBus().send<Application>(EB_APP_DEPLOY, appName) {
-        println("echo received deploy info ${it.result().body()}")
-        val app = it.result().body()
-        it.result().body().deployId
-    }
-
 }
 
 /**

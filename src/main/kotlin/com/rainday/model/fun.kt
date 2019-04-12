@@ -2,6 +2,7 @@ package com.rainday.model
 
 import com.rainday.`val`.VERTICLE_INFO
 import io.vertx.core.Context
+import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.impl.ContextInternal
@@ -20,11 +21,6 @@ fun Route.toPath(routeExtInfoMap: HashMap<Int, Relay>): URL? {
 fun Route.toMethod(routeExtInfoMap: HashMap<Int, Relay>): HttpMethod {
     val info = routeExtInfoMap[this.hashCode()]
     return info?.outMethod ?: HttpMethod.GET
-}
-
-fun Route.bindInfo(relay: Relay, routeExtInfoMap: HashMap<Int, Relay>): Route {
-    routeExtInfoMap[this.hashCode()] = relay
-    return this
 }
 
 fun Route.getBindInfo(routeExtInfoMap: HashMap<Int, Relay>): Relay? {
@@ -56,15 +52,7 @@ fun addVerticleDeployInfo(vertx: Vertx, context: Context) {
         "config" to context.config(),
         "identifier" to (context as ContextInternal).deployment.verticleIdentifier()
     )
-    if (vertx.isClustered) {
-        val clusterMap = vertx.sharedData().getClusterWideMap<String, JsonObject>(VERTICLE_INFO) {
-            //get verticle_info map, save info
-            it.result().put(context.deploymentID(), json) {}
-        }
-    } else {
-        val localMap = vertx.sharedData().getLocalMap<String, JsonObject>(VERTICLE_INFO)
-        localMap.put(context.deploymentID(), json)
-    }
+    vertx.globalPut(VERTICLE_INFO,context.deploymentID(), json)
 }
 
 /**
@@ -75,13 +63,57 @@ fun addVerticleDeployInfo(vertx: Vertx, context: Context) {
  * @return : null
  */
 fun deleteVerticleDeployInfo(vertx: Vertx, deployId: String) {
-    if (vertx.isClustered) {
-        val clusterMap = vertx.sharedData().getClusterWideMap<String, JsonObject>(VERTICLE_INFO) {
-            //get verticle_info map, delete verticle info
-            it.result().remove(deployId) {}
+    vertx.globalRemove(VERTICLE_INFO, deployId)
+}
+
+/**
+ * @author wyd
+ * @date  2019-04-09 21:43
+ * @param mapName : 全局map的Name
+ * @param key : mapName中需要被移除的key
+ * @return : null
+ */
+fun Vertx.globalRemove(mapName: String, key: String) {
+    if (this.isClustered) {
+        this.sharedData().getClusterWideMap<String, JsonObject>(mapName) {
+            it.result().remove(key) {}
         }
     } else {
-        val localMap = vertx.sharedData().getLocalMap<String, JsonObject>(VERTICLE_INFO)
-        localMap.remove(deployId)
+        val localMap = this.sharedData().getLocalMap<String, JsonObject>(mapName)
+        localMap.remove(key)
+    }
+}
+
+/**
+ * @author wyd
+ * @date  2019-04-09 21:44
+ * @param mapName : 全局map的name
+ * @param key : mapName中需要增加的key
+ * @param value : key对应的value
+ * @return : null
+ */
+fun Vertx.globalPut(mapName: String, key: String, value: Any) {
+    if (this.isClustered) {
+        this.sharedData().getClusterWideMap<String, JsonObject>(mapName) {
+            it.result().remove(key) {}
+        }
+    } else {
+        val localMap = this.sharedData().getLocalMap<String, JsonObject>(mapName)
+        localMap.remove(key)
+    }
+}
+
+fun Vertx.globalGet(mapName: String, key: String):Any? {
+    return if (this.isClustered) {
+        val resFuture:Future<Any?> = Future.future()
+        this.sharedData().getClusterWideMap<String, JsonObject>(mapName) {
+            it.result().get(key) {
+                resFuture.complete(it.result())
+            }
+        }
+        resFuture.result()
+    } else {
+        val localMap = this.sharedData().getLocalMap<String, JsonObject>(mapName)
+        localMap.get(key)
     }
 }
