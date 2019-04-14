@@ -57,7 +57,7 @@ dependencies {
     implementation "io.vertx:vertx-web-client:${vertxVersion}"
 
     //log
-    implementation 'org.apache.logging.log4j:log4j-api:latest.release'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:latest.release'
     implementation 'org.apache.logging.log4j:log4j-core:latest.release'
 
     //jsr规范
@@ -68,6 +68,13 @@ dependencies {
 
     //embeddeddb
     implementation 'com.h2database:h2:latest.release'
+    implementation('com.zaxxer:HikariCP:latest.release') 
+
+    //jooq
+    implementation 'org.jooq:jooq:latest.release'
+
+    //jooq codegen
+    compileOnly 'org.jooq:jooq-codegen:latest.release'
 //    implementation 'org.xerial:sqlite-jdbc:latest.release'
 
     //testImplementation

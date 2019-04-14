@@ -1,5 +1,10 @@
 {
   "http.port": 8080,
+  "jdbc": {
+    "url": "jdbc:h2:/Users/wyd/h2test",
+    "username": "h2admin",
+    "password": "123456"
+  },
   "ssd.dddf": "sdfsdfsdfssssssssssssssssssssssssssssssssssssss",
   "child": [
     "aaaaaaaaaaaaa",

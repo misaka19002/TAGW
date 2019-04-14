@@ -13,6 +13,7 @@ val routeExtInfoMap = HashMap<Int, Relay>()
 //存储当前所有APP
 val EB_APP_DEPLOY = "app-management-deploy"
 val EB_APP_UNDEPLOY = "app-management-undeploy"
+val EB_APP_DELETE = "app-management-delete"
 
 val QUERY_APP_BYNAME = UUID.randomUUID().toString()
 val FIND_APP_BYNAME = UUID.randomUUID().toString()

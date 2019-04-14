@@ -1,6 +1,5 @@
 package com.rainday
 
-import com.rainday.ext.toJsonString
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import io.vertx.core.DeploymentOptions
@@ -50,7 +49,9 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
      *
      * @param config the read config, empty if none are provided.
      */
-    override fun afterConfigParsed(config: JsonObject) {}
+    override fun afterConfigParsed(config: JsonObject) {
+        println("launcher start, init config: ${Json.encodePrettily(config)}")
+    }
 
     /**
      * Hook for sub-classes of [Launcher] before the vertx instance is started.
@@ -65,7 +66,7 @@ class Launcher : VertxCommandLauncher(), VertxLifecycleHooks {
             .addServer(DEFAULT_DNS2)
             .addServer(DEFAULT_DNS3)
         options.addressResolverOptions = addrResolver
-        println(Json.encode(options))
+        println(Json.encodePrettily(options))
     }
 
     /**

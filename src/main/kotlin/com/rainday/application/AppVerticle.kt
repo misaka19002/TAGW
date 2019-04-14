@@ -1,5 +1,6 @@
 package com.rainday.application
 
+import com.rainday.`val`.APPLICATION_INFO
 import com.rainday.`val`.DEFAULT_USERAGENT
 import com.rainday.`val`.routeExtInfoMap
 import com.rainday.model.*
@@ -20,8 +21,6 @@ import io.vertx.ext.web.client.WebClientOptions
 /**
  * Created by wyd on 2019/3/1 10:16:53.
  * 一个app应该具有的功能为 转发请求，动态修改路由
- * 功能1 路由管理，动态crud
- * 功能2 请求转发(暂不考虑前置处理器，后置处理器)
  */
 class AppVerticle : AbstractVerticle() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
@@ -42,6 +41,7 @@ class AppVerticle : AbstractVerticle() {
     override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
         addVerticleDeployInfo(vertx, context)
+        registerAppConsumers(vertx, deploymentID())
         //初始化路由，管理本app 的route
         router.get("/routes").handler(this::listRoutes)
         //启动本app
@@ -52,8 +52,6 @@ class AppVerticle : AbstractVerticle() {
 
     override fun start() {
         super.start()
-        //根据参数设置 route。inUrl重复，不会生效此条route
-
         val relays = config().getJsonArray("relays")
         relays?.map(JsonObject::mapFrom)?.forEach {
             val relay = it?.mapTo(Relay::class.java)
@@ -130,6 +128,30 @@ class AppVerticle : AbstractVerticle() {
         val clientRequest = webClient.requestAbs(httpMethod, toPath.toString())
         clientRequest.headers().addAll(rc.request().headers())
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
+    }
+    
+    //注册APP management consumer
+    fun registerAppConsumers(vertx: Vertx, deployId:String) {
+        //更新APPname
+        vertx.eventBus().consumer<String>("${deployId}${Action.UPDATE_APPNAME}") {
+            val appName = it.body()
+            val app = vertx.globalGet(APPLICATION_INFO,deployId)
+            app?.apply {
+                this as JsonObject
+                this.put("appName",appName)
+                vertx.globalPut(APPLICATION_INFO,deployId,this)
+            }
+        }
+        //更新APP description
+        vertx.eventBus().consumer<String>("${deployId}${Action.UPDATE_APPDESCRIPTION}") {
+            val description = it.body()
+            val app = vertx.globalGet(APPLICATION_INFO,deployId)
+            app?.apply {
+                this as JsonObject
+                this.put("description",description)
+                vertx.globalPut(APPLICATION_INFO,deployId,this)
+            }
+        }
     }
 }
 

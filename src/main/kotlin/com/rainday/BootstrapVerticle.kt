@@ -51,12 +51,12 @@ class BootstrapVerticle : AbstractVerticle() {
 
         /* 查看所有verticle */
         router.get("/verticles").handler(::showVerticles)
-        
+
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("http.port") ?: defaultPort)
-        /* 部署projectInfoVerticle */
-        vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions())
+        /* 部署dataVerticle */
+        vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions().setConfig(config().getJsonObject("jdbc")))
     }
     
     override fun stop() {
