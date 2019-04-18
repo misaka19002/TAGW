@@ -27,7 +27,7 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="RollingFile"/>
         </Root>
-        <logger name="org.jooq" level="info">
+        <logger name="org.jooq" level="debug" additivity="false">
             <AppenderRef ref="jooqRollingFile"/>
         </logger>
     </Loggers>
