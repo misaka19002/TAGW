@@ -4,7 +4,13 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %l -  %logger{36} - %msg%n"/>
         </Console>
-        <RollingRandomAccessFile name="RollingFile" fileName="logs/tagw.log" filePattern="logs/tagw-%d{yyyy-MM-dd}.log">
+        <RollingRandomAccessFile name="RollingFile" fileName="/logs/tagw.log" filePattern="/logs/tagw-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %l - %m%n" charset="UTF-8"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+            </Policies>
+        </RollingRandomAccessFile>
+        <RollingRandomAccessFile name="jooqRollingFile" fileName="/logs/jooq/jooq.log" filePattern="/logs/jooq/jooq-%d{yyyy-MM-dd}.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %l - %m%n" charset="UTF-8"/>
             <Policies>
                 <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
@@ -21,5 +27,8 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="RollingFile"/>
         </Root>
+        <logger name="org.jooq" level="info">
+            <AppenderRef ref="jooqRollingFile"/>
+        </logger>
     </Loggers>
 </Configuration>
