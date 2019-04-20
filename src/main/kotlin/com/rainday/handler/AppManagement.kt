@@ -1,6 +1,9 @@
 package com.rainday.handler
 
-import com.rainday.`val`.*
+import com.rainday.`val`.EB_APP_DEPLOY
+import com.rainday.`val`.FIND_APP_BYNAME
+import com.rainday.`val`.QUERY_APP_BYNAME
+import com.rainday.`val`.VERTICLE_INFO
 import com.rainday.application.AppVerticle
 import com.rainday.ext.toJsonObject
 import com.rainday.ext.toJsonString
@@ -30,10 +33,9 @@ fun deployApp(rc: RoutingContext) {
                 if (it.succeeded()) {
                     //设置deployId
                     application.deployId = it.result()
-                    val appJson = JsonObject.mapFrom(application)
-                    //将被部署的APP信息存储在全局变量中
-                    vertx.eventBus().send(EB_APP_DEPLOY,appJson)
-                    //响应
+
+                    val json = JsonObject.mapFrom(application)
+                    vertx.eventBus().send(EB_APP_DEPLOY, json)
                     rc.response().setStatusCode(HttpResponseStatus.OK.code())
                         .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
                         .putHeader("location", "/apps/${application.deployId}")
@@ -54,35 +56,48 @@ fun deployApp(rc: RoutingContext) {
  * 更新APP状态，根据action执行不同逻辑
  */
 fun updateApp(rc: RoutingContext) {
-    val vertx = rc.vertx()
     val request = rc.request()
     val action = Action.valueOf(request.getHeader("action") ?: "UNKNOWN")
     when (action) {
+        //修改APP名称
         Action.UPDATE_APPNAME -> updateAppName(rc)
+        //修改APP描述
         Action.UPDATE_APPDESCRIPTION -> updateAppDescription(rc)
-        
+
+        //修改relay中的可热更新字段(允许修改的参数为：outUrl,outMethod,transmission, paramPairs(参数对应关系))
         Action.UPDATE_RELAY -> updateRelay(rc)
+        //新增一个relay
         Action.ADD_RELAY -> addRelay(rc)
+        //删除一个relay(删除一个route，以及这个route绑定的转发信息)
         Action.DELETE_RELAY -> disableRelay(rc)
+        //启用一个relay
         Action.ENABLE_RELAY -> enableRelay(rc)
+        //禁用一个relay
         Action.DISABLE_RELAY -> disableRelay(rc)
-        
+
+        //激活一个APP(deploy这个verticle)
         Action.ACTIVE_APP -> activeApp(rc)
+        //关闭一个APP(undeploy这个verticle)
         Action.INACTIVE_APP -> inactiveApp(rc)
-        Action.UNKNOWN -> rc.response().end("未知的非法操作")
+        //未知操作
+        Action.UNKNOWN -> rc.response()
+            .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+            .setStatusMessage(HttpResponseStatus.BAD_REQUEST.reasonPhrase())
+            .end("未知的非法操作")
     }
 }
 
 /**
  * 删除APP
- * 只能删除状态为inactive的APP，
  */
 fun deleteApp(rc: RoutingContext) {
-    // 这里校验被删除的APP必须是inactive的
+    val vertx = rc.vertx()
+    rc.queryParams()
+    rc.request().params()
+    //todo 这里校验被删除的APP必须是inactive的
     val deployId = rc.pathParam("deployId")
-    //将被部署的APP信息存储在全局变量中
-    
     //todo 这里删除projectInfoVerticle里的APP数据
+//    vertx.eventBus().send("")
 }
 
 /**
@@ -102,6 +117,20 @@ fun findApp(rc: RoutingContext) {
     rc.vertx().eventBus().send<String>(FIND_APP_BYNAME, deployId) {
         rc.response().end(it.result().body())
     }
+}
+
+/**
+ * app唯一性校验
+ */
+fun appUniqueCheck(rc: RoutingContext) {
+    val vertx = rc.vertx()
+    val appName: String by rc.pathParams()
+    vertx.eventBus().send<Application>(EB_APP_DEPLOY, appName) {
+        println("echo received deploy info ${it.result().body()}")
+        val app = it.result().body()
+        it.result().body().deployId
+    }
+
 }
 
 /**
@@ -125,7 +154,7 @@ fun showVerticles(rc: RoutingContext) {
 fun updateAppName(rc: RoutingContext) {
     val appName = rc.bodyAsJson.getString("appName", "")
     val deployId = rc.pathParam("deployId")
-    rc.vertx().eventBus().send<String>("$deployId${Action.UPDATE_APPNAME}", appName) {
+    rc.vertx().eventBus().send<String>(deployId + Action.UPDATE_APPNAME, appName) {
         if (it.succeeded()) {
             rc.response().end (it.result().body())
         }
@@ -138,47 +167,25 @@ fun updateAppName(rc: RoutingContext) {
 fun updateAppDescription(rc: RoutingContext) {
     val description = rc.bodyAsJson.getString("description", "")
     val deployId = rc.pathParam("deployId")
-    rc.vertx().eventBus().send<String>("$deployId${Action.UPDATE_APPDESCRIPTION}", description) {
+    rc.vertx().eventBus().send<String>(deployId + Action.UPDATE_APPDESCRIPTION, description) {
         if (it.succeeded()) {
-            rc.response().end(it.result().body())
+            rc.response().end (it.result().body())
         }
     }
 }
 
 /**
  * 激活APP
- * 从APPinfo中获取appverticle的配置信息，然后deploy
  */
 fun activeApp(rc: RoutingContext) {
-    val vertx = rc.vertx()
-    val deployId = rc.pathParam("deployId")
-    //重新部署APP verticle
-    //todo step1: 查询数据库中的APP信息
-    //todo step2: 部署verticle
-    //todo step3: 修改数据库中的APP状态
+
 }
 
 /**
  * 停止APP
- *
  */
 fun inactiveApp(rc: RoutingContext) {
-    val vertx = rc.vertx()
-    val deployId = rc.pathParam("deployId")
-    //卸载APP verticle
-    vertx.undeploy(deployId) {
-        if (it.succeeded()) {
-            //修改全局变量中的APP状态为inactive
-            vertx.eventBus().send(EB_APP_UNDEPLOY,deployId)
-            rc.response().setStatusCode(HttpResponseStatus.OK.code())
-                .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
-                .end("修改成功")
-        } else {
-            rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
-                .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
-                .end("修改失败")
-        }
-    }
+
 }
 
 /**
