@@ -21,7 +21,7 @@ CREATE TABLE `relays` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `parampair` (
-  `id` int(11) NOT NULL COMMENT '自增主键',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `relayId` int(11) DEFAULT NULL COMMENT 'relayId',
   `inName` varchar(20) DEFAULT NULL COMMENT '入参名称',
   `inType` varchar(20) DEFAULT NULL COMMENT '入参类型',
