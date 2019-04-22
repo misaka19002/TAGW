@@ -1,31 +1,32 @@
+
 CREATE TABLE `application` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-  `appKey` varchar(20) NOT NULL COMMENT 'appkey',
-  `appName` varchar(20) DEFAULT NULL COMMENT 'app名称',
-  `port` int(11) NOT NULL COMMENT 'app端口',
+  `app_key` varchar(20) NOT NULL COMMENT 'appkey',
+  `app_name` varchar(20) DEFAULT NULL COMMENT 'app名称',
+  `app_port` int(11) NOT NULL COMMENT 'app端口',
   `description` varchar(255) DEFAULT NULL COMMENT 'app描述',
-  `status` varchar(20) DEFAULT NULL COMMENT 'app状态',
+  `app_status` varchar(20) DEFAULT NULL COMMENT 'app状态',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
-CREATE TABLE `relays` (
+CREATE TABLE `relay` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-  `appId` int(11) DEFAULT NULL COMMENT 'application主键',
-  `inUrl` varchar(512) DEFAULT NULL COMMENT 'inbound uri',
-  `inMethod` varchar(512) DEFAULT NULL COMMENT 'inbound method',
-  `outUrl` varchar(512) DEFAULT NULL COMMENT 'outbound url',
-  `outMethod` varchar(512) DEFAULT NULL COMMENT 'outbound method',
+  `app_id` int(11) DEFAULT NULL COMMENT 'application主键',
+  `in_url` varchar(512) DEFAULT NULL COMMENT 'inbound uri',
+  `in_method` varchar(512) DEFAULT NULL COMMENT 'inbound method',
+  `out_url` varchar(512) DEFAULT NULL COMMENT 'outbound url',
+  `out_method` varchar(512) DEFAULT NULL COMMENT 'outbound method',
   `transmission` tinyint(1) DEFAULT NULL COMMENT '是否透传body',
-  `status` varchar(512) DEFAULT NULL COMMENT 'relay状态',
+  `relay_status` varchar(512) DEFAULT NULL COMMENT 'relay状态',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `parampair` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-  `relayId` int(11) DEFAULT NULL COMMENT 'relayId',
-  `inName` varchar(20) DEFAULT NULL COMMENT '入参名称',
-  `inType` varchar(20) DEFAULT NULL COMMENT '入参类型',
-  `outName` varchar(20) DEFAULT NULL COMMENT '出参名称',
-  `outType` varchar(20) DEFAULT NULL COMMENT '出参类型',
+  `id` int(11) NOT NULL COMMENT '自增主键',
+  `relay_id` int(11) DEFAULT NULL COMMENT 'relayId',
+  `in_name` varchar(20) DEFAULT NULL COMMENT '入参名称',
+  `in_type` varchar(20) DEFAULT NULL COMMENT '入参类型',
+  `out_name` varchar(20) DEFAULT NULL COMMENT '出参名称',
+  `out_type` varchar(20) DEFAULT NULL COMMENT '出参类型',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
