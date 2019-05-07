@@ -4,13 +4,14 @@
 package com.rainday.gen;
 
 
-import org.jooq.Schema;
-import org.jooq.impl.CatalogImpl;
-
-import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.annotation.Generated;
+
+import org.jooq.Schema;
+import org.jooq.impl.CatalogImpl;
 
 
 /**
@@ -26,7 +27,7 @@ import java.util.List;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DefaultCatalog extends CatalogImpl {
 
-    private static final long serialVersionUID = -711957044;
+    private static final long serialVersionUID = 1309861904;
 
     /**
      * The reference instance of <code></code>
@@ -34,9 +35,9 @@ public class DefaultCatalog extends CatalogImpl {
     public static final DefaultCatalog DEFAULT_CATALOG = new DefaultCatalog();
 
     /**
-     * The schema <code>PUBLIC</code>.
+     * The schema <code></code>.
      */
-    public final Public PUBLIC = com.rainday.gen.Public.PUBLIC;
+    public final DefaultSchema DEFAULT_SCHEMA = com.rainday.gen.DefaultSchema.DEFAULT_SCHEMA;
 
     /**
      * No further instances allowed
@@ -54,6 +55,6 @@ public class DefaultCatalog extends CatalogImpl {
 
     private final List<Schema> getSchemas0() {
         return Arrays.<Schema>asList(
-            Public.PUBLIC);
+            DefaultSchema.DEFAULT_SCHEMA);
     }
 }
