@@ -1,5 +1,5 @@
-import com.UrlTemplate
 import com.rainday.handler.RelayHandlerKt
+import com.rainday.model.UrlTemplate
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.dns.AddressResolverOptions

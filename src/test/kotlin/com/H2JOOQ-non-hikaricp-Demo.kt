@@ -1,7 +1,5 @@
 package com
 
-import com.rainday.gen.Tables
-import com.rainday.gen.tables.pojos.UserInfo
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.Record
 import org.jooq.SQLDialect
@@ -45,25 +43,5 @@ fun main() {
     val r1s = dsl.selectFrom<Record>("aa").sql
     val r2s = dsl.selectCount().from("aa").where("1=1").sql
     val r3s = dsl.select(DSL.count(DSL.field("2"))).from("aa").getSQL()
-
-    val userinfos = dsl.selectFrom(Tables.USER_INFO).fetchInto(Tables.USER_INFO)
-    val userinfosingle = dsl.selectFrom(Tables.USER_INFO).limit(1).fetchSingle()
-    val userinfosingleaa = dsl.selectFrom(Tables.USER_INFO).limit(1).fetchOneInto(Tables.USER_INFO)
-
-
-    val userinfoone = dsl.selectFrom(Tables.USER_INFO).limit(1).fetchInto(Tables.USER_INFO)
-    val userinfos1 = dsl.selectFrom(Tables.USER_INFO).fetchInto(Tables.USER_INFO)
-    println(userinfos)
-    println(userinfos1)
-
-    println("\n\n\n\n")
-    println(userinfosingle)
-    println(userinfos.fields())
-    println(userinfos.intoMaps())
-    println(userinfos.into(Tables.USER_INFO.ID))
-
-    //select info pojos
-    val result = dsl.selectFrom(Tables.USER_INFO).fetchInto(UserInfo::class.java)
-    println(result)
     Thread.sleep(1000)
 }

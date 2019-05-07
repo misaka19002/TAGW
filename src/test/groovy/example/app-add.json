@@ -1,8 +1,9 @@
 {
-  "appName": "app1",
-  "port": 8081,
+  "appKey": "appKey001",
+  "appName": "appName001",
+  "appPort": 8081,
   "description": "这是一个测试的app",
-  "status": "active",
+  "appStatus": "active",
   "relays": [
     {
       "inUrl": "/relay/jianshu/1/:pid",
@@ -10,8 +11,8 @@
       "outUrl": "https://www.jianshu.com/p/:pid",
       "outMethod": "GET",
       "transmission": true,
-      "status": "active",
-      "paramPairs": [
+      "relayStatus": "active",
+      "parampairs": [
         {
           "inName": "pid",
           "inType": "path",
@@ -21,13 +22,13 @@
       ]
     },
     {
-      "inUrl": "/relay/jianshu/2/:pid",
+      "inUrl": "/relay/jianshu/1/:pid",
       "inMethod": "GET",
       "outUrl": "https://www.jianshu.com/p/:pid",
       "outMethod": "GET",
       "transmission": true,
-      "status": "active",
-      "paramPairs": [
+      "relayStatus": "active",
+      "parampairs": [
         {
           "inName": "pid",
           "inType": "path",
