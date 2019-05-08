@@ -2,8 +2,6 @@ package com.rainday
 
 import com.rainday.application.DataVerticle
 import com.rainday.handler.*
-import com.rainday.model.addVerticleDeployInfo
-import com.rainday.model.deleteVerticleDeployInfo
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
@@ -26,7 +24,6 @@ class BootstrapVerticle : AbstractVerticle() {
 
     override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
-        addVerticleDeployInfo(vertx, context)
     }
 
     override fun start() {
@@ -55,13 +52,13 @@ class BootstrapVerticle : AbstractVerticle() {
         vertx.createHttpServer()
             .requestHandler(router)
             .listen(config().getInteger("http.port") ?: defaultPort)
+
         /* 部署dataVerticle */
         vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions().setConfig(config().getJsonObject("jdbc")))
     }
     
     override fun stop() {
         super.stop()
-        deleteVerticleDeployInfo(vertx, this.deploymentID())
     }
 
 }

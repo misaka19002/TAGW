@@ -5,10 +5,11 @@ import com.rainday.`val`.FIND_APP_BYNAME
 import com.rainday.`val`.QUERY_APP_BYNAME
 import com.rainday.`val`.VERTICLE_INFO
 import com.rainday.application.AppVerticle
+import com.rainday.dto.DeployDto
 import com.rainday.ext.toJsonObject
 import com.rainday.ext.toJsonString
+import com.rainday.gen.tables.pojos.Application
 import com.rainday.model.Action
-import com.rainday.model.Application
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.json.JsonObject
@@ -23,22 +24,23 @@ import io.vertx.ext.web.RoutingContext
  */
 fun deployApp(rc: RoutingContext) {
     val vertx = rc.vertx()
-    val application = rc.bodyAsJson.mapTo(Application::class.java)
-    //deploy之前先查询，如果已经存在则直接返回
-    vertx.eventBus().send<JsonObject>(FIND_APP_BYNAME, application.appName) {
-        if (it.succeeded() && it.result().body() == null) {
+    val deployDto = rc.bodyAsJson.mapTo(DeployDto::class.java)
+    //部署APP之前先保存APP信息，APP信息不存在(key不存在，且端口未被占用)，则继续deploy
+    vertx.eventBus().send<Boolean>(EB_APP_DEPLOY, rc.bodyAsJson) {
+        //APP信息保存数据库成功
+        if (it.succeeded() && it.result().body()) {
             //不存在继续deploy
-            val deployOption = DeploymentOptions().setConfig(application.toJsonObject())
+            val deployOption = DeploymentOptions().setConfig(deployDto.toJsonObject())
             vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
                 if (it.succeeded()) {
                     //设置deployId
-                    application.deployId = it.result()
+                    deployDto.deployId = it.result()
 
-                    val json = JsonObject.mapFrom(application)
+                    val json = JsonObject.mapFrom(deployDto)
                     vertx.eventBus().send(EB_APP_DEPLOY, json)
                     rc.response().setStatusCode(HttpResponseStatus.OK.code())
                         .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
-                        .putHeader("location", "/apps/${application.deployId}")
+                        .putHeader("location", "/apps/${deployDto.deployId}")
                         .end()
                 } else {
                     rc.response().end("部署失败.原因：${it.cause().message}")

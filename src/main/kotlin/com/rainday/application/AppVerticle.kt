@@ -3,6 +3,8 @@ package com.rainday.application
 import com.rainday.`val`.APPLICATION_INFO
 import com.rainday.`val`.DEFAULT_USERAGENT
 import com.rainday.`val`.routeExtInfoMap
+import com.rainday.handler.Global404Handler
+import com.rainday.handler.Global413Handler
 import com.rainday.model.*
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.AbstractVerticle
@@ -20,7 +22,6 @@ import io.vertx.ext.web.client.WebClientOptions
 
 /**
  * Created by wyd on 2019/3/1 10:16:53.
- * 一个app应该具有的功能为 转发请求，动态修改路由
  */
 class AppVerticle : AbstractVerticle() {
     private val logger = LoggerFactory.getLogger(this.javaClass)
@@ -40,8 +41,10 @@ class AppVerticle : AbstractVerticle() {
 
     override fun init(vertx: Vertx, context: Context) {
         super.init(vertx, context)
-        addVerticleDeployInfo(vertx, context)
         registerAppConsumers(vertx, deploymentID())
+        //errorHandler
+        router.errorHandler(HttpResponseStatus.NOT_FOUND.code(), ::Global404Handler)
+        router.errorHandler(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code(), ::Global413Handler)
         //初始化路由，管理本app 的route
         router.get("/routes").handler(this::listRoutes)
         //启动本app
