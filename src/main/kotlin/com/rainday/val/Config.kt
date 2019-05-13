@@ -20,3 +20,4 @@ val DEFAULT_USERAGENT = "TAGW/1.0.0"
 
 val VERTICLE_INFO = "verticleinfo"
 val APPLICATION_INFO = "applicationinfo"
+val ROUTE_INFO = "routeinfo"

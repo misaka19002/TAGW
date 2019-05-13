@@ -39,20 +39,34 @@ class DataVerticle : AbstractVerticle() {
         eventBus.consumer<JsonObject>(EB_APP_DEPLOY) {
             //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
             val deployDto = it.body().mapTo(DeployDto::class.java)
-            dslContext.transaction { txBeginner->
-                //DSL.using(txBeginner)
-                val application = Tables.APPLICATION.newRecord().apply {
-                    this.from(deployDto)
-                }
-                val relayList = deployDto.relays.map {
-                    Tables.RELAY.newRecord().apply {
-                        this.from(it)
+            try {
+                dslContext.transaction { txContext->
+                    //DSL.using(txBeginner)
+                    var appRecord = Tables.APPLICATION.newRecord().apply {
+                        this.from(deployDto)
+                    }
+                    appRecord = DSL.using(txContext).insertInto(Tables.APPLICATION).values(appRecord).returning(Tables.APPLICATION.ID).fetchOne()
+                    val relayList = deployDto.relays.forEach {
+                        //save relay
+                        val relayRecord = Tables.RELAY.newRecord().apply {
+                            this.from(it)
+                            this.appId = appRecord.id
+                        }
+                        DSL.using(txContext).insertInto(Tables.RELAY).values(relayRecord).returning(Tables.RELAY.ID).execute()
+                        //save parampair
+                        it.parampairs.forEach {
+                            val pair = Tables.PARAMPAIR.newRecord().apply {
+                                this.from(it)
+                                this.relayId = relayRecord.id
+                            }
+                            DSL.using(txContext).insertInto(Tables.PARAMPAIR).values(pair).returning(Tables.PARAMPAIR.ID).execute()
+                        }
                     }
                 }
-                val parampairList = deployDto.relays.map {
-                    it.parampairs.ma
-                }
-
+                it.reply("success")
+            } catch (e: Exception) {
+                logger.error("保存APPkey异常", e)
+                it.reply("error")
             }
         }
         

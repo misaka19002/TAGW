@@ -5,9 +5,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpHeaders
 import spock.lang.Specification
 import spock.util.concurrent.BlockingVariable
-import sun.security.provider.certpath.Vertex
 
-import javax.ws.rs.HeaderParam
 import javax.ws.rs.core.MediaType
 
 class AppManagementTest extends Specification {
@@ -105,4 +103,5 @@ class AppManagementTest extends Specification {
         respStatus.get() == 201
         respHeaders.get().toList().toString().contains("location")
     }
+
 }
