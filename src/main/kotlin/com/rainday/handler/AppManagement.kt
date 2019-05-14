@@ -5,7 +5,7 @@ import com.rainday.`val`.FIND_APP_BYNAME
 import com.rainday.`val`.QUERY_APP_BYNAME
 import com.rainday.`val`.VERTICLE_INFO
 import com.rainday.application.AppVerticle
-import com.rainday.dto.DeployDto
+import com.rainday.dto.ApplicationDto
 import com.rainday.ext.toJsonObject
 import com.rainday.ext.toJsonString
 import com.rainday.gen.tables.pojos.Application
@@ -24,7 +24,7 @@ import io.vertx.ext.web.RoutingContext
  */
 fun deployApp(rc: RoutingContext) {
     val vertx = rc.vertx()
-    val deployDto = rc.bodyAsJson.mapTo(DeployDto::class.java)
+    val deployDto = rc.bodyAsJson.mapTo(ApplicationDto::class.java)
     //部署APP之前先保存APP信息，APP信息不存在(key不存在，且端口未被占用)，则继续deploy
     vertx.eventBus().send<Boolean>(EB_APP_DEPLOY, rc.bodyAsJson) {
         //APP信息保存数据库成功

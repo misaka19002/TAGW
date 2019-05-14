@@ -4,8 +4,10 @@ import com.rainday.`val`.EB_APP_DELETE
 import com.rainday.`val`.EB_APP_DEPLOY
 import com.rainday.`val`.EB_APP_UNDEPLOY
 import com.rainday.`val`.FIND_APP_BYNAME
-import com.rainday.dto.DeployDto
+import com.rainday.dto.ApplicationDto
 import com.rainday.gen.Tables
+import com.rainday.gen.tables.daos.ApplicationDao
+import com.rainday.gen.tables.pojos.Application
 import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
@@ -13,9 +15,11 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import org.h2.tools.Server
 import org.jooq.SQLDialect
+import org.jooq.conf.RenderNameStyle
+import org.jooq.conf.Settings
 import org.jooq.impl.DSL
+
 
 /**
  * Created by wyd on 2019/3/1 13:31:53.
@@ -34,8 +38,11 @@ class DataVerticle : AbstractVerticle() {
             idleTimeout = 60000
         }
     }
+
     private val dslContext by lazy {
-        DSL.using(dataSource,SQLDialect.H2)
+        //h2命名方式:upper
+        val settings = Settings().withRenderNameStyle(RenderNameStyle.UPPER) // Defaults to QUOTED
+        DSL.using(dataSource,SQLDialect.H2,settings)
     }
     private val eventBus by lazy { vertx.eventBus() }
 
@@ -48,18 +55,26 @@ class DataVerticle : AbstractVerticle() {
         super.start()
         //appDeploy 成功记录 app 信息
         eventBus.consumer<JsonObject>(EB_APP_DEPLOY) {
+            vertx.executeBlocking<Any>({future ->
+
+//                ApplicationDao.
+            },{result ->
+
+
+            })
             //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
-            val deployDto = it.body().mapTo(DeployDto::class.java)
-            println(Json.encode(deployDto))
+            val appDto = it.body().mapTo(ApplicationDto::class.java)
+            println(Json.encode(appDto))
+            val d = appDto as Application
+            ApplicationDao(dslContext.configuration()).insert(d)
             try {
-                Server.createPgServer()
                 dslContext.transaction { txContext->
                     //DSL.using(txBeginner)
                     var appRecord = Tables.APPLICATION.newRecord().apply {
-                        this.from(deployDto)
+                        this.from(appDto)
                     }
                     appRecord = DSL.using(txContext).insertInto(Tables.APPLICATION).values(appRecord).returning(Tables.APPLICATION.ID).fetchOne()
-                    val relayList = deployDto.relays.forEach {
+                    val relayList = appDto.relays.forEach {
                         //save relay
                         val relayRecord = Tables.RELAY.newRecord().apply {
                             this.from(it)

@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by wyd on 2019/4/23 16:56:43.
  */
-public class DeployDto extends Application {
+public class ApplicationDto extends Application {
     List<RelayDto> relays;
 
     public List<RelayDto> getRelays() {
