@@ -54,7 +54,14 @@ class BootstrapVerticle : AbstractVerticle() {
             .listen(config().getInteger("http.port") ?: defaultPort)
 
         /* 部署dataVerticle */
-        vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions().setConfig(config().getJsonObject("jdbc")))
+        vertx.deployVerticle(DataVerticle::class.java, DeploymentOptions().setConfig(config().getJsonObject("jdbc"))) {
+            if (it.succeeded()) {
+                println("Succeeded in deploying verticle -- DataVerticle")
+            } else {
+                println("Failed in deploying verticle -- DataVerticle ${it.result()} ${it.cause().printStackTrace()}")
+            }
+
+        }
     }
     
     override fun stop() {

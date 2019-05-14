@@ -90,12 +90,14 @@ class AppVerticle : AbstractVerticle() {
 
         val path = rc.normalisedPath()
         val f1 = Future.future<AsyncMap<String, Any>>()
-        val f2 = Future.future<Any>()
 
         vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO, f1)
         f1.compose {
-            it.get(path,f2)
-            f2
+            Future.future<Any>().apply {
+                it.get(path, this)
+            }
+            /*it.get(path,f2)
+            f2*/
         }.setHandler {
             if (it.result() == null) {
                 rc.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code())

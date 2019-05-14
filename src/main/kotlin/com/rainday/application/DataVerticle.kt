@@ -8,8 +8,12 @@ import com.rainday.dto.DeployDto
 import com.rainday.gen.Tables
 import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.Context
+import io.vertx.core.Vertx
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
+import org.h2.tools.Server
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 
@@ -24,6 +28,8 @@ class DataVerticle : AbstractVerticle() {
             jdbcUrl = config().getString("url")
             username = config().getString("username")
             password = config().getString("password")
+            this.maximumPoolSize = 10
+            this.minimumIdle = 2
             connectionTimeout = 60000
             idleTimeout = 60000
         }
@@ -32,6 +38,11 @@ class DataVerticle : AbstractVerticle() {
         DSL.using(dataSource,SQLDialect.H2)
     }
     private val eventBus by lazy { vertx.eventBus() }
+
+    override fun init(vertx: Vertx?, context: Context?) {
+        super.init(vertx, context)
+        println("DataVerticle init")
+    }
     
     override fun start() {
         super.start()
@@ -39,7 +50,9 @@ class DataVerticle : AbstractVerticle() {
         eventBus.consumer<JsonObject>(EB_APP_DEPLOY) {
             //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
             val deployDto = it.body().mapTo(DeployDto::class.java)
+            println(Json.encode(deployDto))
             try {
+                Server.createPgServer()
                 dslContext.transaction { txContext->
                     //DSL.using(txBeginner)
                     var appRecord = Tables.APPLICATION.newRecord().apply {

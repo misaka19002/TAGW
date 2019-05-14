@@ -6,6 +6,7 @@ CREATE TABLE `application` (
   `app_port` int(11) NOT NULL COMMENT 'app端口',
   `description` varchar(255) DEFAULT NULL COMMENT 'app描述',
   `app_status` varchar(20) DEFAULT NULL COMMENT 'app状态',
+  `deploy_id` varchar(36) DEFAULT NULL COMMENT 'deployId',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
@@ -16,7 +17,7 @@ CREATE TABLE `relay` (
   `in_method` varchar(512) DEFAULT NULL COMMENT 'inbound method',
   `out_url` varchar(512) DEFAULT NULL COMMENT 'outbound url',
   `out_method` varchar(512) DEFAULT NULL COMMENT 'outbound method',
-  `transmission` tinyint(1) DEFAULT NULL COMMENT '是否透传body',
+  `transmission` int(1) DEFAULT NULL COMMENT '是否透传body',
   `relay_status` varchar(512) DEFAULT NULL COMMENT 'relay状态',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;

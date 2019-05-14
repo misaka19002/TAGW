@@ -16,7 +16,8 @@ import java.util.*
 fun main() {
     
     //数据库连接URL，当前连接的是目录下的gacl数据库
-    val JDBC_URL = "jdbc:h2:/Users/wyd/h2test"
+//    val JDBC_URL = "jdbc:h2:d:/Users/wyd/h2test"
+    val JDBC_URL = "jdbc:h2:tcp://172.30.5.114:9092//srv/h2database/data/h2test"
     //连接数据库时使用的用户名
     val USERNAME = "h2admin"
     //连接数据库时使用的密码
@@ -35,6 +36,41 @@ fun main() {
     stmt.execute("DROP TABLE IF EXISTS USER_INFO")
     //创建USER_INFO表
     stmt.execute("CREATE TABLE USER_INFO(id VARCHAR(36) PRIMARY KEY,name VARCHAR(100),sex VARCHAR(4))")
+
+    //创建tagw表
+    stmt.execute("DROP TABLE IF EXISTS application")
+    stmt.execute("DROP TABLE IF EXISTS relay")
+    stmt.execute("DROP TABLE IF EXISTS parampair")
+    stmt.execute("CREATE TABLE `application` (\n" +
+        "  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',\n" +
+        "  `app_key` varchar(20) NOT NULL COMMENT 'appkey',\n" +
+        "  `app_name` varchar(20) DEFAULT NULL COMMENT 'app名称',\n" +
+        "  `app_port` int(11) NOT NULL COMMENT 'app端口',\n" +
+        "  `description` varchar(255) DEFAULT NULL COMMENT 'app描述',\n" +
+        "  `app_status` varchar(20) DEFAULT NULL COMMENT 'app状态',\n" +
+        "  `deploy_id` varchar(36) DEFAULT NULL COMMENT 'deployId',\n" +
+        "  PRIMARY KEY (`id`)\n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8\n")
+    stmt.execute("CREATE TABLE `relay` (\n" +
+        "  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',\n" +
+        "  `app_id` int(11) DEFAULT NULL COMMENT 'application主键',\n" +
+        "  `in_url` varchar(512) DEFAULT NULL COMMENT 'inbound uri',\n" +
+        "  `in_method` varchar(512) DEFAULT NULL COMMENT 'inbound method',\n" +
+        "  `out_url` varchar(512) DEFAULT NULL COMMENT 'outbound url',\n" +
+        "  `out_method` varchar(512) DEFAULT NULL COMMENT 'outbound method',\n" +
+        "  `transmission` int(1) DEFAULT NULL COMMENT '是否透传body',\n" +
+        "  `relay_status` varchar(512) DEFAULT NULL COMMENT 'relay状态',\n" +
+        "  PRIMARY KEY (`id`)\n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8")
+    stmt.execute("CREATE TABLE `parampair` (\n" +
+        "  `id` int(11) NOT NULL COMMENT '自增主键',\n" +
+        "  `relay_id` int(11) DEFAULT NULL COMMENT 'relayId',\n" +
+        "  `in_name` varchar(20) DEFAULT NULL COMMENT '入参名称',\n" +
+        "  `in_type` varchar(20) DEFAULT NULL COMMENT '入参类型',\n" +
+        "  `out_name` varchar(20) DEFAULT NULL COMMENT '出参名称',\n" +
+        "  `out_type` varchar(20) DEFAULT NULL COMMENT '出参类型',\n" +
+        "  PRIMARY KEY (`id`)\n" +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8")
     //新增
     stmt.executeUpdate("INSERT INTO USER_INFO VALUES('" + UUID.randomUUID() + "','大日如来','男')")
     stmt.executeUpdate("INSERT INTO USER_INFO VALUES('" + UUID.randomUUID() + "','青龙','男')")
