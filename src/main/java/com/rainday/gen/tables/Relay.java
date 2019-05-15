@@ -41,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Relay extends TableImpl<RelayRecord> {
 
-    private static final long serialVersionUID = -1207071147;
+    private static final long serialVersionUID = -1902487880;
 
     /**
      * The reference instance of <code>relay</code>
@@ -89,7 +89,7 @@ public class Relay extends TableImpl<RelayRecord> {
     /**
      * The column <code>relay.transmission</code>. 是否透传body
      */
-    public final TableField<RelayRecord, Byte> TRANSMISSION = createField("transmission", org.jooq.impl.SQLDataType.TINYINT, this, "是否透传body");
+    public final TableField<RelayRecord, Short> TRANSMISSION = createField("transmission", org.jooq.impl.SQLDataType.SMALLINT, this, "是否透传body");
 
     /**
      * The column <code>relay.relay_status</code>. relay状态

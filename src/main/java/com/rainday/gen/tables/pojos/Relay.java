@@ -22,7 +22,7 @@ import javax.annotation.Generated;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Relay implements Serializable {
 
-    private static final long serialVersionUID = 673500133;
+    private static final long serialVersionUID = 1259740123;
 
     private Integer id;
     private Integer appId;
@@ -30,7 +30,7 @@ public class Relay implements Serializable {
     private String  inMethod;
     private String  outUrl;
     private String  outMethod;
-    private Byte    transmission;
+    private Short   transmission;
     private String  relayStatus;
 
     public Relay() {}
@@ -53,7 +53,7 @@ public class Relay implements Serializable {
         String  inMethod,
         String  outUrl,
         String  outMethod,
-        Byte    transmission,
+        Short   transmission,
         String  relayStatus
     ) {
         this.id = id;
@@ -114,11 +114,11 @@ public class Relay implements Serializable {
         this.outMethod = outMethod;
     }
 
-    public Byte getTransmission() {
+    public Short getTransmission() {
         return this.transmission;
     }
 
-    public void setTransmission(Byte transmission) {
+    public void setTransmission(Short transmission) {
         this.transmission = transmission;
     }
 

@@ -6,11 +6,13 @@ package com.rainday.gen.tables.daos;
 
 import com.rainday.gen.tables.Application;
 import com.rainday.gen.tables.records.ApplicationRecord;
-import org.jooq.Configuration;
-import org.jooq.impl.DAOImpl;
+
+import java.util.List;
 
 import javax.annotation.Generated;
-import java.util.List;
+
+import org.jooq.Configuration;
+import org.jooq.impl.DAOImpl;
 
 
 /**

@@ -28,9 +28,9 @@ public class Parampair implements Serializable {
     private Integer id;
     private Integer relayId;
     private String  inName;
-    private ParamType  inType;
+    private ParamType inType;
     private String  outName;
-    private ParamType outType;
+    private ParamType  outType;
 
     public Parampair() {}
 
@@ -83,6 +83,14 @@ public class Parampair implements Serializable {
         this.inName = inName;
     }
 
+    public ParamType getInType() {
+        return this.inType;
+    }
+
+    public void setInType(ParamType inType) {
+        this.inType = inType;
+    }
+
     public String getOutName() {
         return this.outName;
     }
@@ -91,16 +99,8 @@ public class Parampair implements Serializable {
         this.outName = outName;
     }
 
-    public void setInType(ParamType inType) {
-        this.inType = inType;
-    }
-
-    public ParamType getInType() {
-        return inType;
-    }
-
     public ParamType getOutType() {
-        return outType;
+        return this.outType;
     }
 
     public void setOutType(ParamType outType) {

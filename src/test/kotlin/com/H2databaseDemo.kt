@@ -50,27 +50,30 @@ fun main() {
         "  `app_status` varchar(20) DEFAULT NULL COMMENT 'app状态',\n" +
         "  `deploy_id` varchar(36) DEFAULT NULL COMMENT 'deployId',\n" +
         "  PRIMARY KEY (`id`)\n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8\n")
-    stmt.execute("CREATE TABLE `relay` (\n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;\n" +
+        "\n" +
+        "CREATE TABLE `relay` (\n" +
         "  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',\n" +
         "  `app_id` int(11) DEFAULT NULL COMMENT 'application主键',\n" +
         "  `in_url` varchar(512) DEFAULT NULL COMMENT 'inbound uri',\n" +
         "  `in_method` varchar(512) DEFAULT NULL COMMENT 'inbound method',\n" +
         "  `out_url` varchar(512) DEFAULT NULL COMMENT 'outbound url',\n" +
         "  `out_method` varchar(512) DEFAULT NULL COMMENT 'outbound method',\n" +
-        "  `transmission` int(1) DEFAULT NULL COMMENT '是否透传body',\n" +
+        "  `transmission` smallint(1) DEFAULT NULL COMMENT '是否透传body',\n" +
         "  `relay_status` varchar(512) DEFAULT NULL COMMENT 'relay状态',\n" +
         "  PRIMARY KEY (`id`)\n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8")
-    stmt.execute("CREATE TABLE `parampair` (\n" +
-        "  `id` int(11) NOT NULL COMMENT '自增主键',\n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;\n" +
+        "\n" +
+        "CREATE TABLE `parampair` (\n" +
+        "  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',\n" +
         "  `relay_id` int(11) DEFAULT NULL COMMENT 'relayId',\n" +
         "  `in_name` varchar(20) DEFAULT NULL COMMENT '入参名称',\n" +
         "  `in_type` varchar(20) DEFAULT NULL COMMENT '入参类型',\n" +
         "  `out_name` varchar(20) DEFAULT NULL COMMENT '出参名称',\n" +
         "  `out_type` varchar(20) DEFAULT NULL COMMENT '出参类型',\n" +
         "  PRIMARY KEY (`id`)\n" +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8")
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8;")
+
     //新增
     stmt.executeUpdate("INSERT INTO USER_INFO VALUES('" + UUID.randomUUID() + "','大日如来','男')")
     stmt.executeUpdate("INSERT INTO USER_INFO VALUES('" + UUID.randomUUID() + "','青龙','男')")

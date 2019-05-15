@@ -10,6 +10,7 @@ import java.util.*
 val EB_APP_DEPLOY = "app-management-deploy"
 val EB_APP_UNDEPLOY = "app-management-undeploy"
 val EB_APP_DELETE = "app-management-delete"
+val EB_APP_UPDATEDEPLOYID = "app-management-updatedeployid"
 
 val QUERY_APP_BYNAME = UUID.randomUUID().toString()
 val FIND_APP_BYNAME = UUID.randomUUID().toString()

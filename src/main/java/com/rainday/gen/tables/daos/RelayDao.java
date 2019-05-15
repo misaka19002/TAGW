@@ -100,7 +100,7 @@ public class RelayDao extends DAOImpl<RelayRecord, com.rainday.gen.tables.pojos.
     /**
      * Fetch records that have <code>transmission IN (values)</code>
      */
-    public List<com.rainday.gen.tables.pojos.Relay> fetchByTransmission(Byte... values) {
+    public List<com.rainday.gen.tables.pojos.Relay> fetchByTransmission(Short... values) {
         return fetch(Relay.RELAY.TRANSMISSION, values);
     }
 

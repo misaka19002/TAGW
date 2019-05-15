@@ -1,18 +1,15 @@
 package com.rainday.application
 
-import com.rainday.`val`.EB_APP_DELETE
-import com.rainday.`val`.EB_APP_DEPLOY
-import com.rainday.`val`.EB_APP_UNDEPLOY
-import com.rainday.`val`.FIND_APP_BYNAME
+import com.rainday.`val`.*
 import com.rainday.dto.ApplicationDto
-import com.rainday.gen.Tables
+import com.rainday.gen.Tables.APPLICATION
 import com.rainday.gen.tables.daos.ApplicationDao
-import com.rainday.gen.tables.pojos.Application
+import com.rainday.gen.tables.daos.ParampairDao
+import com.rainday.gen.tables.daos.RelayDao
 import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
 import io.vertx.core.Vertx
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
 import org.jooq.SQLDialect
@@ -55,49 +52,61 @@ class DataVerticle : AbstractVerticle() {
         super.start()
         //appDeploy 成功记录 app 信息
         eventBus.consumer<JsonObject>(EB_APP_DEPLOY) {
-            vertx.executeBlocking<Any>({future ->
+            vertx.executeBlocking<Any>({ future ->
+                val appDto = it.body().mapTo(ApplicationDto::class.java)
+                val d0 = dslContext.selectCount().from(APPLICATION).where(
+                    APPLICATION.APP_KEY.eq(appDto.appKey)
+                ).or(
+                    APPLICATION.APP_NAME.eq(appDto.appName)
+                ).or(
+                    APPLICATION.APP_PORT.eq(appDto.appPort)
+                ).fetch()
 
-//                ApplicationDao.
-            },{result ->
-
-
-            })
-            //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
-            val appDto = it.body().mapTo(ApplicationDto::class.java)
-            println(Json.encode(appDto))
-            val d = appDto as Application
-            ApplicationDao(dslContext.configuration()).insert(d)
-            try {
                 dslContext.transaction { txContext->
-                    //DSL.using(txBeginner)
-                    var appRecord = Tables.APPLICATION.newRecord().apply {
-                        this.from(appDto)
+                    //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
+                    //app insert
+                    ApplicationDao(txContext).insert(appDto)
+
+                    //relay insert
+                    /*val relayList = appDto.relays.forEach { relayDto ->
+                        relayDto.appId = appDto.id
+                        RelayDao(txContext).insert(relayDto)
+                        relayDto.parampairs.forEach {
+                            ParampairDao(txContext).insert(it)
+                        }
+                    }*/
+                    //relay insert
+                    val relayList = appDto.relays.map {
+                        it.appId = appDto.id
+                        return@map it
                     }
-                    appRecord = DSL.using(txContext).insertInto(Tables.APPLICATION).values(appRecord).returning(Tables.APPLICATION.ID).fetchOne()
-                    val relayList = appDto.relays.forEach {
-                        //save relay
-                        val relayRecord = Tables.RELAY.newRecord().apply {
-                            this.from(it)
-                            this.appId = appRecord.id
+                    RelayDao(txContext).insert(relayList)
+
+                    //parampair insert
+                    relayList.forEach { relayDto ->
+                        val parampairList = relayDto.parampairs.map {
+                            it.relayId = relayDto.id
+                            return@map it
                         }
-                        DSL.using(txContext).insertInto(Tables.RELAY).values(relayRecord).returning(Tables.RELAY.ID).execute()
-                        //save parampair
-                        it.parampairs.forEach {
-                            val pair = Tables.PARAMPAIR.newRecord().apply {
-                                this.from(it)
-                                this.relayId = relayRecord.id
-                            }
-                            DSL.using(txContext).insertInto(Tables.PARAMPAIR).values(pair).returning(Tables.PARAMPAIR.ID).execute()
-                        }
+                        ParampairDao(txContext).insert(parampairList)
                     }
                 }
-                it.reply("success")
-            } catch (e: Exception) {
-                logger.error("保存APPkey异常", e)
-                it.reply("error")
-            }
+            },{result ->
+                it.reply(result.succeeded())
+                //如果失败打印日志
+                result.takeIf {
+                    it.failed()
+                }?.apply {
+                    logger.error("EB_APP_DEPLOY 异常，", this.cause())
+                }
+            })
         }
-        
+
+        //update deployId
+        eventBus.consumer<JsonObject>(EB_APP_UPDATEDEPLOYID) {
+
+
+        }
         //appUndeploy
         eventBus.consumer<JsonObject>(EB_APP_UNDEPLOY) {
             //todo 数据库，将APP改为inactive
