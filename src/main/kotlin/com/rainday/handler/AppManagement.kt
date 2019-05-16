@@ -1,9 +1,6 @@
 package com.rainday.handler
 
-import com.rainday.`val`.EB_APP_DEPLOY
-import com.rainday.`val`.FIND_APP_BYNAME
-import com.rainday.`val`.QUERY_APP_BYNAME
-import com.rainday.`val`.VERTICLE_INFO
+import com.rainday.`val`.*
 import com.rainday.application.AppVerticle
 import com.rainday.dto.ApplicationDto
 import com.rainday.ext.toJsonObject
@@ -12,8 +9,11 @@ import com.rainday.gen.tables.pojos.Application
 import com.rainday.model.Action
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.core.json.json
+import io.vertx.kotlin.core.json.obj
 
 /**
  * Created by wyd on 2019/3/1 11:28:33.
@@ -24,24 +24,27 @@ import io.vertx.ext.web.RoutingContext
  */
 fun deployApp(rc: RoutingContext) {
     val vertx = rc.vertx()
-    val deployDto = rc.bodyAsJson.mapTo(ApplicationDto::class.java)
+    val appDto = rc.bodyAsJson.mapTo(ApplicationDto::class.java)
     //部署APP之前先保存APP信息，APP信息不存在(key不存在，且端口未被占用)，则继续deploy
-    vertx.eventBus().send<Boolean>(EB_APP_DEPLOY, rc.bodyAsJson) {
+    vertx.eventBus().send<Int>(EB_APP_DEPLOY, rc.bodyAsJson) {
         //APP信息保存数据库成功
-        if (it.succeeded() && it.result().body()) {
+        if (it.succeeded()) {
+            //application表id
+            appDto.id = it.result().body()
+
             //不存在继续deploy
-            val deployOption = DeploymentOptions().setConfig(deployDto.toJsonObject())
+            val deployOption = DeploymentOptions().setConfig(appDto.toJsonObject())
             vertx.deployVerticle(AppVerticle::class.java.name, deployOption) {
                 if (it.succeeded()) {
                     //设置deployId
-                    deployDto.deployId = it.result()
+                    appDto.deployId = it.result()
+                    //update deployid
+                    updateAppDeployId(vertx, appDto.id, appDto.deployId)
 
-                    val json = JsonObject.mapFrom(deployDto)
-//                    vertx.eventBus().send(EB_APP_DEPLOY, json)
                     rc.response().setStatusCode(HttpResponseStatus.OK.code())
                         .setStatusMessage(HttpResponseStatus.OK.reasonPhrase())
-                        .putHeader("location", "/apps/${deployDto.deployId}")
-                        .end()
+                        .putHeader("location", "/apps/${appDto.deployId}")
+                        .end(JsonObject.mapFrom(appDto).encodePrettily())
                 } else {
                     rc.response().end("部署失败.原因：${it.cause().message}")
                 }
@@ -49,9 +52,21 @@ fun deployApp(rc: RoutingContext) {
         } else {
             rc.response().setStatusCode(HttpResponseStatus.CONFLICT.code())
                 .setStatusMessage(HttpResponseStatus.CONFLICT.reasonPhrase())
-                .end(it.result().body().toString())
+                .end(it.cause().message)
         }
     }
+}
+
+/**
+ * 更新Application - deployId
+ */
+fun updateAppDeployId(vertx: Vertx, appId: Int, deployId: String) {
+    vertx.eventBus().send(EB_APP_UPDATEDEPLOYID, json {
+        this.obj(
+            "id" to appId,
+            "deployId" to deployId
+        )
+    })
 }
 
 /**

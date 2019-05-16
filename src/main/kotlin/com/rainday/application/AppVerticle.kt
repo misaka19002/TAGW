@@ -55,7 +55,7 @@ class AppVerticle : AbstractVerticle() {
 
         vertx.createHttpServer()
             .requestHandler(router)
-            .listen(config().getInteger("port"))
+            .listen(config().getInteger("appPort"))
     }
 
     override fun start() {
@@ -107,7 +107,7 @@ class AppVerticle : AbstractVerticle() {
                 val relayDto = it.result() as RelayDto
                 //使用urltemplate处理参数
                 val template = UrlTemplate(relayDto.outUrl)
-                relayDto?.parampairs?.forEach {
+                relayDto.parampairs?.forEach {
                     template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
                 }
                 //创建httpclient，转发请求

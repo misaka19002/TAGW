@@ -10,7 +10,6 @@ import spock.util.concurrent.BlockingVariable
 import spock.util.concurrent.BlockingVariables
 import spock.util.concurrent.PollingConditions
 import util.TestUtil
-
 /**
  * Created by wyd on 2019/3/11 10:52:33.
  */

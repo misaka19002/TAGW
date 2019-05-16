@@ -1,6 +1,9 @@
 package com
 
 import com.rainday.model.UrlTemplate
+import io.vertx.kotlin.core.json.JsonObject
+import io.vertx.kotlin.core.json.json
+import io.vertx.kotlin.core.json.obj
 import java.net.URL
 import java.util.regex.Pattern
 
@@ -14,6 +17,15 @@ import java.util.regex.Pattern
 val PLACEHOLDER = Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)");
 
 fun main() {
+    val dsdf = json {
+        this.obj(
+            "aa" to "bb"
+        )
+    }
+
+    val sdfdsf = JsonObject().apply {
+        "sdf" to "dsf"
+    }
 
     val url = "http://baidu.com/:a:b"
 //    println(UrlTemplate(URL(url)).setPathParam("a","").setPathParam("b","bb").toString())
