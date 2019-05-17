@@ -65,9 +65,21 @@ class AppVerticle : AbstractVerticle() {
         relays?.map(JsonObject::mapFrom)?.forEach {
             val relayDto = it?.mapTo(RelayDto::class.java)
             relayDto?.also {
-                router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl).handler(this::relayHttpClient)
-                vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO) {
-                    it.result().put(relayDto.inUrl, relayDto) {}
+                vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO) { map ->
+                    map.result().get(relayDto.inUrl) {
+                        if (it.result() == null) {
+                            map.result().put(relayDto.inUrl, relayDto) {
+                                if (it.succeeded()) {
+                                    println("增加route ${relayDto.inUrl}")
+                                    router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl)
+                                        .handler(::relayHttpClient)
+                                }
+                                /*it.takeIf { it.succeeded() }?.run {
+                                    router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl).handler(::relayHttpClient)
+                                }*/
+                            }
+                        }
+                    }
                 }
             }
         }
