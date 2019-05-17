@@ -14,6 +14,16 @@ import java.util.*
  */
 
 fun main() {
+
+    val dd = "aa".takeIf { it.length>1 }.run {
+
+        println(this)
+    }
+    val dd1 = "aa".takeIf { it.length>2 }.run {
+        println(this)
+    }
+
+
     
     //数据库连接URL，当前连接的是目录下的gacl数据库
 //    val JDBC_URL = "jdbc:h2:d:/Users/wyd/h2test"

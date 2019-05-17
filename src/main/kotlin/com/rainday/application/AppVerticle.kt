@@ -5,6 +5,7 @@ import com.rainday.`val`.ROUTE_INFO
 import com.rainday.dto.RelayDto
 import com.rainday.handler.Global404Handler
 import com.rainday.handler.Global413Handler
+import com.rainday.handler.queryRoutes
 import com.rainday.model.UrlTemplate
 import com.rainday.model.getParameter
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -50,7 +51,7 @@ class AppVerticle : AbstractVerticle() {
         router.errorHandler(HttpResponseStatus.NOT_FOUND.code(), ::Global404Handler)
         router.errorHandler(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code(), ::Global413Handler)
         //初始化路由，管理本app 的route
-        router.get("/routes").handler(this::listRoutes)
+        router.get("/routes").handler(::queryRoutes)
         //启动本app+
 
         vertx.createHttpServer()
@@ -65,6 +66,29 @@ class AppVerticle : AbstractVerticle() {
         relays?.map(JsonObject::mapFrom)?.forEach {
             val relayDto = it?.mapTo(RelayDto::class.java)
             relayDto?.also {
+                Future.future<AsyncMap<String, Any>>().apply {
+                    vertx.sharedData().getAsyncMap(ROUTE_INFO, this)
+                }.compose { map ->
+                    Future.future<Any>().apply {
+                        map.get(relayDto.inUrl, this)
+                    }.compose {
+                        if (it == null) {
+                            Future.future<Void>().apply {
+                                println("增加route ${relayDto.inUrl}")
+                                router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl)
+                                    .handler(::relayHttpClient)
+                                map.put(relayDto.inUrl, relayDto, this)
+                            }.compose {
+                                Future.succeededFuture("route 设置成功")
+                            }
+                        } else {
+                            Future.succeededFuture("route 已存在，无需重复设置")
+                        }
+                    }
+                }.setHandler {
+                    println(it.result())
+                }
+                /*//callback hell
                 vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO) { map ->
                     map.result().get(relayDto.inUrl) {
                         if (it.result() == null) {
@@ -74,33 +98,25 @@ class AppVerticle : AbstractVerticle() {
                                     router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl)
                                         .handler(::relayHttpClient)
                                 }
-                                /*it.takeIf { it.succeeded() }?.run {
+                                *//*it.takeIf { it.succeeded() }?.run {
                                     router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl).handler(::relayHttpClient)
-                                }*/
+                                }*//*
                             }
                         }
                     }
-                }
+                }*/
             }
         }
     }
-    
+
     override fun stop() {
         super.stop()
     }
 
-    /* 返回当前所有的route */
-    fun listRoutes(rc: RoutingContext) {
-        vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO){
-            it.result().values {
-                rc.response().end(Json.encodePrettily(it.result()))
-            }
-        }
-    }
-
     fun relayHttpClient(rc: RoutingContext) {
 
-        val path = rc.normalisedPath()
+        //rc.normalisedPath()  获取的是填充pathvariable之后的url
+        val path = rc.currentRoute().path
         val f1 = Future.future<AsyncMap<String, Any>>()
 
         vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO, f1)
@@ -206,9 +222,9 @@ class AppVerticle : AbstractVerticle() {
         clientRequest.headers().addAll(rc.request().headers())
         println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")*/
     }
-    
+
     //注册APP management consumer
-    fun registerAppConsumers(vertx: Vertx, deployId:String) {
+    fun registerAppConsumers(vertx: Vertx, deployId: String) {
         /*//更新APPname
         vertx.eventBus().consumer<String>("${deployId}${Action.UPDATE_APPNAME}") {
             val appName = it.body()

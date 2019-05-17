@@ -12,9 +12,12 @@ import com.rainday.model.Code
 import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
+import io.vertx.core.Future
 import io.vertx.core.Vertx
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
+import io.vertx.core.shareddata.AsyncMap
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameStyle
 import org.jooq.conf.Settings
@@ -44,6 +47,10 @@ class DataVerticle : AbstractVerticle() {
         val settings = Settings().withRenderNameStyle(RenderNameStyle.UPPER) // Defaults to QUOTED
         DSL.using(dataSource, SQLDialect.H2, settings)
     }
+
+    private val appDao by lazy { ApplicationDao(dslContext.configuration()) }
+    private val relayDao by lazy { RelayDao(dslContext.configuration()) }
+
     private val eventBus by lazy { vertx.eventBus() }
 
     override fun init(vertx: Vertx?, context: Context?) {
@@ -76,7 +83,7 @@ class DataVerticle : AbstractVerticle() {
                     dslContext.transaction { txContext ->
                         //todo 根据APPkey， 端口判断，任意一个已经存在，那么返回null。数据库新增APP信息
                         //app insert
-                        ApplicationDao(txContext).insert(appDto)
+                        appDao.insert(appDto)
 
                         //relay insert
                         /*val relayList = appDto.relays.forEach { relayDto ->
@@ -134,13 +141,30 @@ class DataVerticle : AbstractVerticle() {
                     it.fail(Code.app500.value, "")
                 }
             })
-            /*ApplicationDao().update(
+            /*appDao.update(
                 Application().apply { this.id = appDto.id; this.deployId = deployId }
             )*/
         }
         //appUndeploy
         eventBus.consumer<JsonObject>(EB_APP_UNDEPLOY) {
             //todo 数据库，将APP改为inactive
+        }
+
+        //update application
+        eventBus.consumer<JsonObject>(EB_APP_UPDATEAPPLICATION) {
+            //根据字段修改application
+            vertx.executeBlocking<Any>({ future ->
+                val application = it.body().mapTo(Application::class.java)
+                val count = appDao.update(application)
+                future.complete(count)
+            }, { r ->
+                if (r.succeeded()) {
+                    it.reply(r.result())
+                } else {
+                    it.fail(Code.app500.value, "")
+                }
+            })
+
         }
 
         eventBus.consumer<JsonObject>(EB_APP_DELETE) {
@@ -150,6 +174,40 @@ class DataVerticle : AbstractVerticle() {
         //根据 appName 查询已发布 app 的信息
         eventBus.consumer<String>(FIND_APP_BYNAME) {
             //todo 根据APPname查询数据库，如果APP已经存在则直接返回。
+        }
+
+
+        /**
+         * 查询routeInfo
+         * @param d 2：查询数据库；1：查sharedData；默认：查sharedData
+         */
+        eventBus.consumer<String>(FIND_RELAY_ALL) { replay ->
+            //d=1,查询sharedData d=2查询
+            val d = replay.body()
+            when (d) {
+                "2" -> {
+                    vertx.executeBlocking<Any>({ future ->
+                        val result = relayDao.findAll()
+                        future.complete(result)
+                    }, { r ->
+                        if (r.succeeded()) {
+                            replay.reply(Json.encodePrettily(r.result()))
+                        } else {
+                            logger.error("FIND_RELAY_ALL 异常", r.cause())
+                            replay.fail(Code.app500.value, "查询routeInfo异常")
+                        }
+                    })
+                }
+                else -> {
+                    Future.future<AsyncMap<String, Any>>().apply{
+                        vertx.sharedData().getAsyncMap(ROUTE_INFO, this)
+                    }.setHandler {
+                        it.result().values {
+                            replay.reply(Json.encodePrettily(it.result()))
+                        }
+                    }
+                }
+            }
         }
     }
 }
