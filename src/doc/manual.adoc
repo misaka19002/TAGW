@@ -1,3 +1,3 @@
 = 操作手册
 
-== idea debug program arguments参数：run com.rainday.BootstrapVerticle -conf src/main/resources/example-conf.json --launcher-class=com.rainday.com.a.Launcher
+== idea debug program arguments参数：run com.rainday.BootstrapVerticle -conf src/main/resources/example-conf.json --launcher-class=com.rainday.Launcher

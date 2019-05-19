@@ -35,35 +35,43 @@ data class UrlTemplate(val rawUrl: String) {
         }
     }
 
-    fun setPathParam(name: String, value: String): UrlTemplate {
-        pathParamMap.put(
-            URLEncoder.encode(name, Charsets.UTF_8.name()),
-            URLEncoder.encode(value, Charsets.UTF_8.name())
-        )
-        pathIndices[name]?.let {
-            parsablePath[it] = value
+    fun setPathParam(name: String, value: String?): UrlTemplate {
+        value?.apply {
+            pathParamMap.put(
+                URLEncoder.encode(name, Charsets.UTF_8.name()),
+                URLEncoder.encode(value, Charsets.UTF_8.name())
+            )
+            pathIndices[name]?.let {
+                parsablePath[it] = value
+            }
         }
         return this
     }
 
-    fun setQueryParam(name: String, value: String): UrlTemplate {
-        queryParamMap.put(
-            URLEncoder.encode(name, Charsets.UTF_8.name()),
-            URLEncoder.encode(value, Charsets.UTF_8.name())
-        )
+    fun setQueryParam(name: String, value: String?): UrlTemplate {
+        value?.apply {
+            queryParamMap.put(
+                URLEncoder.encode(name, Charsets.UTF_8.name()),
+                URLEncoder.encode(value, Charsets.UTF_8.name())
+            )
+        }
         return this
     }
 
-    fun setHeaderParam(name: String, value: String): UrlTemplate {
-        queryParamMap.put(name, value)
+    fun setHeaderParam(name: String, value: String?): UrlTemplate {
+        value?.apply {
+            headerParamMap.put(name, value)
+        }
         return this
     }
 
-    fun setParam(paramType: ParamType, name: String, value: String): UrlTemplate {
-        when (paramType) {
-            ParamType.path -> setPathParam(name, value)
-            ParamType.query -> setQueryParam(name, value)
-            ParamType.header -> setHeaderParam(name, value)
+    fun setParam(paramType: ParamType, name: String, value: String?): UrlTemplate {
+        value?.apply {
+            when (paramType) {
+                ParamType.path -> setPathParam(name, value)
+                ParamType.query -> setQueryParam(name, value)
+                ParamType.header -> setHeaderParam(name, value)
+            }
         }
         return this
     }

@@ -3,9 +3,11 @@ package com.rainday.application
 import com.rainday.`val`.DEFAULT_USERAGENT
 import com.rainday.`val`.ROUTE_INFO
 import com.rainday.dto.RelayDto
+import com.rainday.exception.TagwException
 import com.rainday.handler.Global404Handler
 import com.rainday.handler.Global413Handler
 import com.rainday.handler.queryRoutes
+import com.rainday.model.Code
 import com.rainday.model.UrlTemplate
 import com.rainday.model.getParameter
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -14,6 +16,7 @@ import io.vertx.core.Context
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClientOptions
+import io.vertx.core.http.HttpClientRequest
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -117,101 +120,76 @@ class AppVerticle : AbstractVerticle() {
 
         //rc.normalisedPath()  获取的是填充pathvariable之后的url
         val path = rc.currentRoute().path
-        val f1 = Future.future<AsyncMap<String, Any>>()
 
-        vertx.sharedData().getAsyncMap<String, Any>(ROUTE_INFO, f1)
-        f1.compose {
+        Future.future<AsyncMap<String, Any>>().apply {
+            vertx.sharedData().getAsyncMap(ROUTE_INFO, this)
+        }.compose {
             Future.future<Any>().apply {
                 it.get(path, this)
             }
-            /*it.get(path,f2)
-            f2*/
-        }.setHandler {
-            if (it.result() == null) {
-                rc.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code())
-                    .setStatusMessage(HttpResponseStatus.NOT_FOUND.reasonPhrase())
-                    .end("resources-($path) not found ")
+        }.compose {
+            if (it == null) {
+                Future.failedFuture(TagwException(Code.relay404))
             } else {
-                val relayDto = it.result() as RelayDto
-                //使用urltemplate处理参数
-                val template = UrlTemplate(relayDto.outUrl)
-                relayDto.parampairs?.forEach {
-                    template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
-                }
-                //创建httpclient，转发请求
-                val clientRequest = httpclient.requestAbs(HttpMethod.valueOf(relayDto.outMethod), template.toString())
-                clientRequest.headers().addAll(rc.request().headers())
-                if (relayDto.transmission.toInt() == 1) {
-                    Pump.pump(rc.request(), clientRequest).start()
-                }
-                //上游请求结束，则结束下游请求
-                rc.request().endHandler {
-                    println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
-                    clientRequest.end()
-                }
-                //后端结果handler,使用数据泵将数据打回用户浏览器
-                clientRequest.handler {
-                    println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-                    println("clientRequest handler 处理response ")
-                    println("clientRequest response header ${Json.encode(it.headers().entries())}")
-                    rc.response().headers().addAll(it.headers())
-                    Pump.pump(it, rc.response()).start()
-                    it.endHandler {
-                        println("client.response trigger endHandler --------- connection: ${clientRequest.connection()}")
-                        rc.response().end()
-                    }
-                }
-
-                clientRequest.exceptionHandler {
+                Future.succeededFuture(it)
+            }
+        }.compose {
+            //todo 异常处理。1、URL格式化异常。2、参数找不到异常。2.1参数位置不对等。
+            //todo 增加对body参数的变形处理,可以使用handler编排机制。或者引入dsl。
+            val relayDto = it as RelayDto
+            //使用urltemplate处理参数
+            val template = UrlTemplate(relayDto.outUrl)
+            relayDto.parampairs?.forEach {
+                template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
+            }
+            //创建httpclient，转发请求
+            val clientRequest = httpclient.requestAbs(HttpMethod.valueOf(relayDto.outMethod), template.toString())
+            Future.succeededFuture<Pair<RelayDto, HttpClientRequest>>(relayDto to clientRequest)
+        }.setHandler {
+            when (it.succeeded()) {
+                false -> {
                     rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
                         .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
-                        .end("请求异常${it.message} ${it.localizedMessage}")
+                        .end("请求异常")
+                    logger.error("relayHttpClient 异常，", it.cause())
+                }
+
+                true -> {
+                    val relayDto = it.result().first
+                    val clientRequest = it.result().second
+
+                    clientRequest.headers().addAll(rc.request().headers())
+                    if (relayDto.transmission.toInt() == 1) {
+                        Pump.pump(rc.request(), clientRequest).start()
+                    }
+                    //上游请求结束，则结束下游请求
+                    rc.request().endHandler {
+                        println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
+                        clientRequest.end()
+                    }
+                    //后端结果handler,使用数据泵将数据打回用户浏览器
+                    clientRequest.handler {
+                        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
+                        println("clientRequest handler 处理response ")
+                        println("clientRequest response header ${Json.encode(it.headers().entries())}")
+                        rc.response().headers().addAll(it.headers())
+                        Pump.pump(it, rc.response()).start()
+                        it.endHandler {
+                            println("client.response trigger endHandler --------- connection: ${clientRequest.connection()}")
+                            rc.response().end()
+                        }
+                    }
+
+                    clientRequest.exceptionHandler {
+                        rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
+                            .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
+                            .end("请求异常${it.message} ${it.localizedMessage}")
+                    }
+
                 }
             }
-        }
-        /*var toPath = rc.currentRoute().toPath(routeExtInfoMap)
-        val httpMethod = rc.currentRoute().toMethod(routeExtInfoMap)
-        val relay = rc.currentRoute().getBindInfo(routeExtInfoMap)
 
-        //使用urltemplate处理参数
-        val template = UrlTemplate(relay?.outUrl.toString())
-        relay?.paramPairs?.forEach {
-            template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
         }
-        val clientRequest = httpclient.requestAbs(httpMethod, template.toString())
-        clientRequest.headers().addAll(rc.request().headers())
-//        clientRequest.putHeader("Content-Type",rc.request().getHeader("Content-Type"))
-//        clientRequest.putHeader("Content-Length",rc.request().getHeader("Content-Length"))
-        clientRequest.headers().addAll(template.headerParamMap)
-
-        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-        //将收到的数据打到后端服务器，可以认为是透传模式。透传-将inboundbody传个后端服务器
-        //todo 后续添加参数变形模式
-        Pump.pump(rc.request(), clientRequest).start()
-        //请求结束
-        rc.request().endHandler {
-            println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
-            clientRequest.end()
-        }
-
-        //后端结果handler,使用数据泵将数据打回用户浏览器
-        clientRequest.handler {
-            println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-            println("clientRequest handler 处理response ")
-            println("clientRequest response header ${Json.encode(it.headers().entries())}")
-            rc.response().headers().addAll(it.headers())
-            Pump.pump(it, rc.response()).start()
-            it.endHandler {
-                println("client.response trigger endHandler --------- connection: ${clientRequest.connection()}")
-                rc.response().end()
-            }
-        }
-
-        clientRequest.exceptionHandler {
-            rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
-                .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
-                .end("请求异常${it.message} ${it.localizedMessage}")
-        }*/
     }
 
     fun relayWebClient(rc: RoutingContext) {

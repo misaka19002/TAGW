@@ -14,6 +14,8 @@ enum class Code(val value: Int, var msg: String? = "") {
     app500(500, "app verticle deploy exception"),
     app510(510, "app verticle exist"),
 
+    relay404(404, "relay url not exist"),
+
     app600(100);
 
     val svalue: String = value.toString()
