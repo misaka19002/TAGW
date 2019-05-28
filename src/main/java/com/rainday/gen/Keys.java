@@ -10,12 +10,11 @@ import com.rainday.gen.tables.Relay;
 import com.rainday.gen.tables.records.ApplicationRecord;
 import com.rainday.gen.tables.records.ParampairRecord;
 import com.rainday.gen.tables.records.RelayRecord;
-
-import javax.annotation.Generated;
-
 import org.jooq.Identity;
 import org.jooq.UniqueKey;
 import org.jooq.impl.Internal;
+
+import javax.annotation.Generated;
 
 
 /**
@@ -37,6 +36,7 @@ public class Keys {
     // -------------------------------------------------------------------------
 
     public static final Identity<ApplicationRecord, Integer> IDENTITY_APPLICATION = Identities0.IDENTITY_APPLICATION;
+    public static final Identity<ParampairRecord, Integer> IDENTITY_PARAMPAIR = Identities0.IDENTITY_PARAMPAIR;
     public static final Identity<RelayRecord, Integer> IDENTITY_RELAY = Identities0.IDENTITY_RELAY;
 
     // -------------------------------------------------------------------------
@@ -58,6 +58,7 @@ public class Keys {
 
     private static class Identities0 {
         public static Identity<ApplicationRecord, Integer> IDENTITY_APPLICATION = Internal.createIdentity(Application.APPLICATION, Application.APPLICATION.ID);
+        public static Identity<ParampairRecord, Integer> IDENTITY_PARAMPAIR = Internal.createIdentity(Parampair.PARAMPAIR, Parampair.PARAMPAIR.ID);
         public static Identity<RelayRecord, Integer> IDENTITY_RELAY = Internal.createIdentity(Relay.RELAY, Relay.RELAY.ID);
     }
 

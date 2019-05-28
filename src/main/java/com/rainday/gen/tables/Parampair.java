@@ -8,23 +8,13 @@ import com.rainday.gen.DefaultSchema;
 import com.rainday.gen.Indexes;
 import com.rainday.gen.Keys;
 import com.rainday.gen.tables.records.ParampairRecord;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Generated;
-
-import org.jooq.Field;
-import org.jooq.ForeignKey;
-import org.jooq.Index;
-import org.jooq.Name;
-import org.jooq.Record;
-import org.jooq.Schema;
-import org.jooq.Table;
-import org.jooq.TableField;
-import org.jooq.UniqueKey;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.TableImpl;
+
+import javax.annotation.Generated;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -40,7 +30,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Parampair extends TableImpl<ParampairRecord> {
 
-    private static final long serialVersionUID = 824272157;
+    private static final long serialVersionUID = 979136319;
 
     /**
      * The reference instance of <code>parampair</code>
@@ -58,7 +48,7 @@ public class Parampair extends TableImpl<ParampairRecord> {
     /**
      * The column <code>parampair.id</code>. 自增主键
      */
-    public final TableField<ParampairRecord, Integer> ID = createField("id", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "自增主键");
+    public final TableField<ParampairRecord, Integer> ID = createField("id", org.jooq.impl.SQLDataType.INTEGER.nullable(false).identity(true), this, "自增主键");
 
     /**
      * The column <code>parampair.relay_id</code>. relayId
@@ -132,6 +122,14 @@ public class Parampair extends TableImpl<ParampairRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.<Index>asList(Indexes.PARAMPAIR_PRIMARY);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Identity<ParampairRecord, Integer> getIdentity() {
+        return Keys.IDENTITY_PARAMPAIR;
     }
 
     /**
