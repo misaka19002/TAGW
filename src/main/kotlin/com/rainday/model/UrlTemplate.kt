@@ -8,6 +8,7 @@ data class UrlTemplate(val rawUrl: String) {
     val pathParamMap = mutableMapOf<String, String>()
     val queryParamMap = mutableMapOf<String, String>()
     val headerParamMap = mutableMapOf<String, String>()
+    val bodyParamMap = mutableMapOf<String, String>()
 
     private val parsablePath = mutableListOf<String>()
     private val pathIndices = mutableMapOf<String, Int>()
@@ -65,12 +66,20 @@ data class UrlTemplate(val rawUrl: String) {
         return this
     }
 
+    fun setBodyParam(name: String, value: String?): UrlTemplate {
+        value?.apply {
+            bodyParamMap.put(name, value)
+        }
+        return this
+    }
+
     fun setParam(paramType: ParamType, name: String, value: String?): UrlTemplate {
         value?.apply {
             when (paramType) {
                 ParamType.path -> setPathParam(name, value)
                 ParamType.query -> setQueryParam(name, value)
                 ParamType.header -> setHeaderParam(name, value)
+                ParamType.body -> setBodyParam(name, value)
             }
         }
         return this

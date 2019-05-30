@@ -12,6 +12,7 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.json
@@ -26,13 +27,12 @@ import io.vertx.kotlin.core.json.obj
  */
 fun deployApp(rc: RoutingContext) {
     val vertx = rc.vertx()
-    val appDto = rc.bodyAsJson.mapTo(ApplicationDto::class.java)
     //部署APP之前先保存APP信息，APP信息不存在(key不存在，且端口未被占用)，则继续deploy
-    vertx.eventBus().send<Int>(EB_APP_DEPLOY, rc.bodyAsJson) {
+    vertx.eventBus().send<String>(EB_APP_DEPLOY, rc.bodyAsJson) {
         //APP信息保存数据库成功
         if (it.succeeded()) {
             //application表id
-            appDto.id = it.result().body()
+            val appDto = Json.decodeValue(it.result().body(), ApplicationDto::class.java)
 
             //不存在继续deploy
             val deployOption = DeploymentOptions().setConfig(appDto.toJsonObject())
@@ -254,4 +254,5 @@ fun enableRelay(rc: RoutingContext) {
 fun disableRelay(rc: RoutingContext) {
 
 
+    
 }

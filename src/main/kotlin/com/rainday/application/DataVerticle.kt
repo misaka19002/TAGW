@@ -109,7 +109,7 @@ class DataVerticle : AbstractVerticle() {
                             ParampairDao(txContext).insert(parampairList)
                         }
                     }
-                    future.complete(appDto.id)
+                    future.complete(Json.encode(appDto))
                 }
             }, { r ->
                 if (r.succeeded()) {
