@@ -72,8 +72,8 @@ class AppVerticle : AbstractVerticle() {
 
     override fun start() {
         super.start()
-        //生成route，并将route对应的转发信息保存在asyncMap中
-        relayMap?.forEach { inUrl, relayDto ->
+        //生成route
+        relayMap.forEach { _, relayDto ->
             router.route(HttpMethod.valueOf(relayDto.inMethod), relayDto.inUrl).handler(::relayHttpClient)
         }
     }
@@ -100,7 +100,9 @@ class AppVerticle : AbstractVerticle() {
                     }
                     //创建httpclient，转发请求
                     val clientRequest = httpclient.requestAbs(HttpMethod.valueOf(relayDto.outMethod), template.toString())
-                    clientRequest.headers().addAll(rc.request().headers())
+                    //处理请求头
+                    clientRequest.headers().addAll(rc.request().headers()).addAll(template.headerParamMap).add("tagw", DEFAULT_USERAGENT)
+
                     if (relayDto.transmission.toInt() == 1) {
                         Pump.pump(rc.request(), clientRequest).start()
                     } else if (template.bodyParamMap.isNotEmpty()) {
@@ -108,25 +110,23 @@ class AppVerticle : AbstractVerticle() {
                             this.obj(template.bodyParamMap)
                         }
                     }
-                    mapOf<String, String>().forEach { t, u ->  }
                     //上游请求结束，则结束下游请求
                     rc.request().endHandler {
-                        println("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
+                        if (logger.isDebugEnabled) logger.debug("rc.request trigger endHandler --------- connection: ${rc.request().connection()}")
                         clientRequest.end()
                     }
                     //后端结果handler,使用数据泵将数据打回用户浏览器
                     clientRequest.handler {
-                        println("clientRequest 发送请求时headers ${Json.encode(clientRequest.headers().entries())}")
-                        println("clientRequest handler 处理response ")
-                        println("clientRequest response header ${Json.encode(it.headers().entries())}")
-                        rc.response().headers().addAll(it.headers())
+                        if (logger.isDebugEnabled) logger.debug("clientRequest send headers ${Json.encode(clientRequest.headers().entries())}")
+                        if (logger.isDebugEnabled) logger.debug("clientRequest response header ${Json.encode(it.headers().entries())}")
+                        //将后端服务响应header全部传回client(对于文件下载有用)
+                        rc.response().headers().addAll(it.headers()).add("tagw", DEFAULT_USERAGENT)
                         Pump.pump(it, rc.response()).start()
                         it.endHandler {
-                            println("client.response trigger endHandler --------- connection: ${clientRequest.connection()}")
+                            if (logger.isDebugEnabled) logger.debug("clientRequest response endHandler --------- connection: ${clientRequest.connection()}")
                             rc.response().end()
                         }
                     }
-
                     clientRequest.exceptionHandler {
                         rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
                             .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
@@ -186,6 +186,7 @@ class AppVerticle : AbstractVerticle() {
     fun queryApp(rc: RoutingContext) {
         rc.response().end(Json.encodePrettily(appDto))
     }
+
     fun aa(cc: String) = {
         cc.plus("sfsdf")
     }

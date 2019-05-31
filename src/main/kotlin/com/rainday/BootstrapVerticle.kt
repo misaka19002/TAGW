@@ -31,6 +31,9 @@ class BootstrapVerticle : AbstractVerticle() {
         router.errorHandler(HttpResponseStatus.NOT_FOUND.code(), ::Global404Handler)
         router.errorHandler(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code(), ::Global413Handler)
         router.route("/*").handler(BodyHandler.create())
+        /* ping */
+        router.get("/ping").handler { it.response().end("pong") }
+
         /* 查询routeinfo */
         router.get("/routes").handler(::queryRoutes)
 
