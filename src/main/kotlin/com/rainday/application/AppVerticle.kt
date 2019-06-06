@@ -5,6 +5,7 @@ import com.rainday.dto.ApplicationDto
 import com.rainday.handler.Global404Handler
 import com.rainday.handler.Global413Handler
 import com.rainday.handler.queryRoutes
+import com.rainday.model.ParamType
 import com.rainday.model.UrlTemplate
 import com.rainday.model.getParameter
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -93,19 +94,27 @@ class AppVerticle : AbstractVerticle() {
                         .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
                         .end("never execute")
                 } else {
-                    //使用urltemplate处理参数
+                    //使用urltemplate处理非 body参数
                     val template = UrlTemplate(relayDto.outUrl)
-                    relayDto.parampairs?.forEach {
+                    relayDto.parampairs?.filter {
+                        it.outType != ParamType.body
+                    }?.forEach {
                         template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
                     }
                     //创建httpclient，转发请求
                     val clientRequest = httpclient.requestAbs(HttpMethod.valueOf(relayDto.outMethod), template.toString())
                     //处理请求头
                     clientRequest.headers().addAll(rc.request().headers()).addAll(template.headerParamMap).add("tagw", DEFAULT_USERAGENT)
-
-                    if (relayDto.transmission.toInt() == 1) {
+                    //1:开启body透传，0:关闭body透传，使用body转型。
+                    if (relayDto.transmission == 1.toShort()) {
                         Pump.pump(rc.request(), clientRequest).start()
-                    } else if (template.bodyParamMap.isNotEmpty()) {
+                    } else {
+                        //对body参数变形，并发送
+                        relayDto.parampairs?.filter {
+                            it.outType != ParamType.body
+                        }?.forEach {
+                            template.setParam(it.outType, it.outName, rc.getParameter(it.inType, it.inName))
+                        }
                         clientRequest.write(false) {
                             this.obj(template.bodyParamMap)
                         }

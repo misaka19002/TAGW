@@ -1,0 +1,105 @@
+{
+  "appKey": "appKey001",
+  "appName": "appName001",
+  "appPort": 8081,
+  "description": "这是一个测试的app",
+  "appStatus": "active",
+  "relays": [
+    {
+      "inName": "path-path",
+      "inType": "path",
+      "outName": "path-path",
+      "outType": "path"
+    },
+    {
+      "inName": "path-query",
+      "inType": "path",
+      "outName": "query-path",
+      "outType": "query"
+    },
+    {
+      "inName": "path-header",
+      "inType": "path",
+      "outName": "header-path",
+      "outType": "header"
+    },
+    {
+      "inName": "path-body",
+      "inType": "path",
+      "outName": "body-path",
+      "outType": "body"
+    },
+    {
+      "inName": "query-path",
+      "inType": "query",
+      "outName": "path-query",
+      "outType": "path"
+    },
+    {
+      "inName": "query-query",
+      "inType": "query",
+      "outName": "query-query",
+      "outType": "query"
+    },
+    {
+      "inName": "query-header",
+      "inType": "query",
+      "outName": "header-query",
+      "outType": "header"
+    },
+    {
+      "inName": "query-body",
+      "inType": "query",
+      "outName": "body-query",
+      "outType": "body"
+    },
+    {
+      "inName": "header-path",
+      "inType": "header",
+      "outName": "path-header",
+      "outType": "path"
+    },
+    {
+      "inName": "header-query",
+      "inType": "header",
+      "outName": "query-header",
+      "outType": "query"
+    },
+    {
+      "inName": "header-header",
+      "inType": "header",
+      "outName": "header-header",
+      "outType": "header"
+    },
+    {
+      "inName": "header-body",
+      "inType": "header",
+      "outName": "body-header",
+      "outType": "body"
+    },
+    {
+      "inName": "body-path",
+      "inType": "body",
+      "outName": "path-body",
+      "outType": "path"
+    },
+    {
+      "inName": "body-query",
+      "inType": "body",
+      "outName": "query-body",
+      "outType": "query"
+    },
+    {
+      "inName": "body-header",
+      "inType": "body",
+      "outName": "header-body",
+      "outType": "header"
+    },
+    {
+      "inName": "body-body",
+      "inType": "body",
+      "outName": "body-body",
+      "outType": "body"
+    }
+  ]
+}

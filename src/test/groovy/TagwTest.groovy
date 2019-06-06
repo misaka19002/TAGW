@@ -25,7 +25,6 @@ class TagwTest extends Specification {
     def setup() {
         //init tagw
         def args = ["run", "com.rainday.BootstrapVerticle", "-conf", "src/main/resources/example-conf.json", "--launcher-class=com.rainday.com.a.Launcher"]
-//        def args = "run com.rainday.BootstrapVerticle -conf src/main/resources/example-conf.json --launcher-class=com.rainday.com.a.Launcher"
         Launcher.main(*args)
 
         //init vertx httpclient
@@ -33,6 +32,7 @@ class TagwTest extends Specification {
 
     }
 
+    //ping pong test
     def "bootstrapVerticle startup test"() {
         given: "declare a response "
         HttpClientResponse response
@@ -51,5 +51,30 @@ class TagwTest extends Specification {
         clientRequest.end()
         then: "check the result"
         respStr.get() == "pong"
+    }
+
+    //deploy an app then get the routes
+    def "deploy app"() {
+        given: "declare a response "
+        HttpClientResponse response
+        def respStr = new BlockingVariable(5)
+
+        and: "init clientRequest"
+        def clientRequest = httpClient.postAbs("http://127.0.0.1:8080/apps")
+
+        when: "fire and get"
+        def is = this.getClass().getResourceAsStream("app-add.json")
+        def testApp = new InputStreamReader(is).readLines().join()
+        clientRequest.handler({
+            response = it
+            it.handler({
+                respStr.set(it.toString())
+            })
+        })
+        clientRequest.end(testApp)
+        then: "check the result"
+        println respStr.get()
+        respStr.get() == "pong"
+
     }
 }
