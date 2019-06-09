@@ -6,100 +6,110 @@
   "appStatus": "active",
   "relays": [
     {
-      "inName": "path-path",
-      "inType": "path",
-      "outName": "path-path",
-      "outType": "path"
-    },
-    {
-      "inName": "path-query",
-      "inType": "path",
-      "outName": "query-path",
-      "outType": "query"
-    },
-    {
-      "inName": "path-header",
-      "inType": "path",
-      "outName": "header-path",
-      "outType": "header"
-    },
-    {
-      "inName": "path-body",
-      "inType": "path",
-      "outName": "body-path",
-      "outType": "body"
-    },
-    {
-      "inName": "query-path",
-      "inType": "query",
-      "outName": "path-query",
-      "outType": "path"
-    },
-    {
-      "inName": "query-query",
-      "inType": "query",
-      "outName": "query-query",
-      "outType": "query"
-    },
-    {
-      "inName": "query-header",
-      "inType": "query",
-      "outName": "header-query",
-      "outType": "header"
-    },
-    {
-      "inName": "query-body",
-      "inType": "query",
-      "outName": "body-query",
-      "outType": "body"
-    },
-    {
-      "inName": "header-path",
-      "inType": "header",
-      "outName": "path-header",
-      "outType": "path"
-    },
-    {
-      "inName": "header-query",
-      "inType": "header",
-      "outName": "query-header",
-      "outType": "query"
-    },
-    {
-      "inName": "header-header",
-      "inType": "header",
-      "outName": "header-header",
-      "outType": "header"
-    },
-    {
-      "inName": "header-body",
-      "inType": "header",
-      "outName": "body-header",
-      "outType": "body"
-    },
-    {
-      "inName": "body-path",
-      "inType": "body",
-      "outName": "path-body",
-      "outType": "path"
-    },
-    {
-      "inName": "body-query",
-      "inType": "body",
-      "outName": "query-body",
-      "outType": "query"
-    },
-    {
-      "inName": "body-header",
-      "inType": "body",
-      "outName": "header-body",
-      "outType": "header"
-    },
-    {
-      "inName": "body-body",
-      "inType": "body",
-      "outName": "body-body",
-      "outType": "body"
+      "inUrl": "/relay/:path_path/:path_query/:path_header/:path_body/",
+      "inMethod": "POST",
+      "outUrl": "http://localhost:6001/:path_path/:query_path/:header_path/:body_path",
+      "outMethod": "POST",
+      "transmission": 0,
+      "relayStatus": "active",
+      "parampairs": [
+        {
+          "inName": "path_path",
+          "inType": "path",
+          "outName": "path_path",
+          "outType": "path"
+        },
+        {
+          "inName": "path_query",
+          "inType": "path",
+          "outName": "query_path",
+          "outType": "query"
+        },
+        {
+          "inName": "path_header",
+          "inType": "path",
+          "outName": "header_path",
+          "outType": "header"
+        },
+        {
+          "inName": "path_body",
+          "inType": "path",
+          "outName": "body_path",
+          "outType": "body"
+        },
+        {
+          "inName": "query_path",
+          "inType": "query",
+          "outName": "path_query",
+          "outType": "path"
+        },
+        {
+          "inName": "query_query",
+          "inType": "query",
+          "outName": "query_query",
+          "outType": "query"
+        },
+        {
+          "inName": "query_header",
+          "inType": "query",
+          "outName": "header_query",
+          "outType": "header"
+        },
+        {
+          "inName": "query_body",
+          "inType": "query",
+          "outName": "body_query",
+          "outType": "body"
+        },
+        {
+          "inName": "header_path",
+          "inType": "header",
+          "outName": "path_header",
+          "outType": "path"
+        },
+        {
+          "inName": "header_query",
+          "inType": "header",
+          "outName": "query_header",
+          "outType": "query"
+        },
+        {
+          "inName": "header_header",
+          "inType": "header",
+          "outName": "header_header",
+          "outType": "header"
+        },
+        {
+          "inName": "header_body",
+          "inType": "header",
+          "outName": "body_header",
+          "outType": "body"
+        },
+        {
+          "inName": "body_path",
+          "inType": "body",
+          "outName": "path_body",
+          "outType": "path"
+        },
+        {
+          "inName": "body_query",
+          "inType": "body",
+          "outName": "query_body",
+          "outType": "query"
+        },
+        {
+          "inName": "body_header",
+          "inType": "body",
+          "outName": "header_body",
+          "outType": "header"
+        },
+        {
+          "inName": "body_body",
+          "inType": "body",
+          "outName": "body_body",
+          "outType": "body"
+        }
+      ]
     }
   ]
 }

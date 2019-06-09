@@ -34,8 +34,11 @@ class BootstrapVerticle : AbstractVerticle() {
         /* ping */
         router.get("/ping").handler { it.response().end("pong") }
 
-        /* 查询routeinfo */
-        router.get("/routes").handler(::queryRoutes)
+        /* truncate database */
+        router.get("/truncate").handler(::truncateDatabase)
+
+       /* *//* 查询routeinfo *//*
+        router.get("/routes").handler(::queryRoutes)*/
 
         /* 查询可以有附加条件APP */
         router.get("/apps").handler(::queryApp)

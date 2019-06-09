@@ -9,9 +9,7 @@ import com.rainday.gen.tables.pojos.Application
 import com.rainday.model.Action
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.DeploymentOptions
-import io.vertx.core.Future
 import io.vertx.core.Vertx
-import io.vertx.core.eventbus.Message
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
@@ -129,26 +127,6 @@ fun queryApp(rc: RoutingContext) {
 }
 
 /**
- * 查询routeInfo
- * @param d 2：查询数据库；1：查sharedData；默认：查sharedData
- */
-fun queryRoutes(rc: RoutingContext) {
-    val d = rc.request().getParam("d") ?: ""
-
-    Future.future<Message<String>>().apply {
-        rc.vertx().eventBus().send(FIND_RELAY_ALL, d, this)
-    }.setHandler {
-        if (it.succeeded()) {
-            rc.response().end(it.result().body())
-        } else {
-            rc.response().setStatusCode(HttpResponseStatus.EXPECTATION_FAILED.code())
-                .setStatusMessage(HttpResponseStatus.EXPECTATION_FAILED.reasonPhrase())
-                .end(it.cause().message)
-        }
-    }
-}
-
-/**
  * 查找某个确定的APP
  */
 fun findApp(rc: RoutingContext) {
@@ -255,4 +233,13 @@ fun disableRelay(rc: RoutingContext) {
 
 
     
+}
+
+/**
+ * truncateDatabase
+ */
+fun truncateDatabase(rc: RoutingContext) {
+    rc.vertx().eventBus().send<String>(TRUNCATE_DATABASE, ""){
+        rc.response().end(it.result().body())
+    }
 }

@@ -3,7 +3,7 @@ package com.rainday.application
 import com.rainday.`val`.*
 import com.rainday.dto.ApplicationDto
 import com.rainday.exception.TagwException
-import com.rainday.gen.Tables.APPLICATION
+import com.rainday.gen.Tables.*
 import com.rainday.gen.tables.daos.ApplicationDao
 import com.rainday.gen.tables.daos.ParampairDao
 import com.rainday.gen.tables.daos.RelayDao
@@ -12,12 +12,10 @@ import com.rainday.model.Code
 import com.zaxxer.hikari.HikariDataSource
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Context
-import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import io.vertx.core.shareddata.AsyncMap
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameStyle
 import org.jooq.conf.Settings
@@ -178,36 +176,38 @@ class DataVerticle : AbstractVerticle() {
 
 
         /**
-         * 查询routeInfo
-         * @param d 2：查询数据库；1：查sharedData；默认：查sharedData
+         * 查询routeInfo, from database
          */
         eventBus.consumer<String>(FIND_RELAY_ALL) { replay ->
-            //d=1,查询sharedData d=2查询
-            val d = replay.body()
-            when (d) {
-                "2" -> {
-                    vertx.executeBlocking<Any>({ future ->
-                        val result = relayDao.findAll()
-                        future.complete(result)
-                    }, { r ->
-                        if (r.succeeded()) {
-                            replay.reply(Json.encodePrettily(r.result()))
-                        } else {
-                            logger.error("FIND_RELAY_ALL 异常", r.cause())
-                            replay.fail(Code.app500.value, "查询routeInfo异常")
-                        }
-                    })
+            vertx.executeBlocking<Any>({ future ->
+                val result = relayDao.findAll()
+                future.complete(result)
+            }, { r ->
+                if (r.succeeded()) {
+                    replay.reply(Json.encodePrettily(r.result()))
+                } else {
+                    logger.error("FIND_RELAY_ALL 异常", r.cause())
+                    replay.fail(Code.app500.value, "查询routeInfo异常")
                 }
-                else -> {
-                    Future.future<AsyncMap<String, Any>>().apply{
-                        vertx.sharedData().getAsyncMap(ROUTE_INFO, this)
-                    }.setHandler {
-                        it.result().values {
-                            replay.reply(Json.encodePrettily(it.result()))
-                        }
-                    }
+            })
+        }
+
+        /**
+         * truncate 所有表
+         */
+        eventBus.consumer<String>(TRUNCATE_DATABASE) { replay ->
+            vertx.executeBlocking<Any>({
+                dslContext.truncate(APPLICATION).execute()
+                dslContext.truncate(RELAY).execute()
+                dslContext.truncate(PARAMPAIR).execute()
+                it.complete()
+            }, { r ->
+                if (r.succeeded()) {
+                    replay.reply("success")
+                } else {
+                    replay.reply("error")
                 }
-            }
+            })
         }
     }
 }
