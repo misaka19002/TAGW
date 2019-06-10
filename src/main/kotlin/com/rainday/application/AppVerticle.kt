@@ -112,9 +112,9 @@ class AppVerticle : AbstractVerticle() {
                         httpclient.requestAbs(HttpMethod.valueOf(relayDto.outMethod), template.toString())
                     //处理请求头
                     clientRequest.headers()
-                        .addAll(rc.request().headers())
-                        .addAll(template.headerParamMap)
-                        .add("tagw", DEFAULT_USERAGENT)
+                        .setAll(rc.request().headers())
+                        .setAll(template.headerParamMap)
+                        .set("tagw", DEFAULT_USERAGENT)
                         .remove("content-length")
 
                     //后端结果handler,使用数据泵将数据打回用户浏览器

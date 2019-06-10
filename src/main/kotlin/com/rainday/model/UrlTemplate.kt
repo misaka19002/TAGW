@@ -43,7 +43,7 @@ data class UrlTemplate(val rawUrl: String) {
                 URLEncoder.encode(value, Charsets.UTF_8.name())
             )
             pathIndices[name]?.let {
-                parsablePath[it] = value
+                parsablePath[it] = URLEncoder.encode(value, Charsets.UTF_8.name())
             }
         }
         return this

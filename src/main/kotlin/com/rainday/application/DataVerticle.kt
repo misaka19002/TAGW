@@ -30,7 +30,7 @@ class DataVerticle : AbstractVerticle() {
 
     private val dataSource by lazy {
         HikariDataSource().apply {
-            jdbcUrl = config().getString("url")
+            jdbcUrl = config().getString("url_company")
             username = config().getString("username")
             password = config().getString("password")
             this.maximumPoolSize = 10

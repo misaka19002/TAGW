@@ -10,7 +10,6 @@ import spock.lang.Stepwise
 import spock.util.concurrent.BlockingVariable
 
 import javax.ws.rs.core.MediaType
-
 /**
  * Created by wyd on 2019/3/11 10:52:33.
  */
@@ -56,7 +55,7 @@ class TagwTest extends Specification {
         when: "fire and get"
         clientRequest.handler({
             response = it
-            it.handler({
+            it.bodyHandler({
                 respStr.set(it.toString())
             })
         })
@@ -73,7 +72,7 @@ class TagwTest extends Specification {
 
         when: "fire and get"
         clientRequest.handler({
-            it.handler({
+            it.bodyHandler({
                 respStr.set(it.toString())
             })
         })
@@ -98,15 +97,15 @@ class TagwTest extends Specification {
         def appConfig = new InputStreamReader(is).readLines().join()
         clientRequest.handler({
             response = it
-            it.handler({
+            it.bodyHandler({
                 respStr.set(it.toString())
             })
         })
         clientRequest.end(appConfig)
+        def appkey = new JsonObject(respStr.get().toString()).getString("appKey")
 
         then: "check the result"
-        println respStr.get()
-        respStr.get() == "pong"
+        appkey == "appKey001"
     }
 
     //deploy an app then get the routes
@@ -116,19 +115,18 @@ class TagwTest extends Specification {
         def respStr = new BlockingVariable(5)
 
         and: "init clientRequest"
-        def url = "http://127.0.0.1:8081/relay/path-aaaa/path-bbbb/path-cccc/path-dddd"
-        url.concat("?query-path=query-aaaa&query-query=query-bbbb&query-header=query-cccc&query-body=query-dddd")
-        def clientRequest = httpClient.postAbs("")
-        clientRequest.putHeader("header-path", "header-aaaa")
-        clientRequest.putHeader("header-query", "header-bbbb")
-        clientRequest.putHeader("header-header", "header-cccc")
-        clientRequest.putHeader("header-body", "header-dddd")
-        clientRequest.write(new JsonObject([
-            "body-path"  : "body-aaaa",
-            "body-query" : "body-bbbb",
-            "body-header": "body-cccc",
-            "body-body"  : "body-dddd",
-        ]).toString())
+        def url = "http://127.0.0.1:8081/relay/path_aaaa/path_bbbb/path_cccc/path_dddd" + "?query_path=query_aaaa&query_query=query_bbbb&query_header=query_cccc&query_body=query_dddd"
+        def clientRequest = httpClient.postAbs(url)
+        clientRequest.putHeader("header_path", "header_aaaa")
+        clientRequest.putHeader("header_query", "header_bbbb")
+        clientRequest.putHeader("header_header", "header_cccc")
+        clientRequest.putHeader("header_body", "header_dddd")
+        def bodyParam = new JsonObject([
+            "body_path"  : "body_aaaa",
+            "body_query" : "body_bbbb",
+            "body_header": "body_cccc",
+            "body_body"  : "body_dddd",
+        ]).toString()
 
         when: "fire and get"
         clientRequest.handler({
@@ -137,11 +135,29 @@ class TagwTest extends Specification {
                 respStr.set(it.toString())
             })
         })
-        clientRequest.end(appConfig)
-
+        clientRequest.end(bodyParam)
         then: "check the result"
-        println respStr.get()
-        println respStr.get()
-        respStr.get() == "pong"
+        def json = new JsonObject(respStr.get().toString())
+
+        //assert path varuable
+        json.getString("path").contains("path_aaaa")
+        json.getString("path").contains("query_aaaa")
+        json.getString("path").contains("header_aaaa")
+        json.getString("path").contains("body_aaaa")
+        //assert query varuable
+        json.getString("query").contains("path_bbbb")
+        json.getString("query").contains("query_bbbb")
+        json.getString("query").contains("header_bbbb")
+        json.getString("query").contains("body_bbbb")
+        //assert header varuable
+        json.getString("header").contains("path_cccc")
+        json.getString("header").contains("query_cccc")
+        json.getString("header").contains("header_cccc")
+        json.getString("header").contains("body_cccc")
+        //assert body varuable
+        json.getString("body").contains("path_dddd")
+        json.getString("body").contains("query_dddd")
+        json.getString("body").contains("header_dddd")
+        json.getString("body").contains("body_dddd")
     }
 }

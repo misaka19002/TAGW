@@ -6,9 +6,9 @@
   "appStatus": "active",
   "relays": [
     {
-      "inUrl": "/relay/:path_path/:path_query/:path_header/:path_body/",
+      "inUrl": "/relay/:path_path/:path_query/:path_header/:path_body",
       "inMethod": "POST",
-      "outUrl": "http://localhost:6001/:path_path/:query_path/:header_path/:body_path",
+      "outUrl": "http://localhost:6001/demo/echo/now/:path_path/:path_query/:path_header/:path_body",
       "outMethod": "POST",
       "transmission": 0,
       "relayStatus": "active",
